@@ -57,7 +57,7 @@ export function plotHydroSOSBands(
         fill: "tozeroy",
     
         fillcolor:
-            "rgba(180,0,0,0.25)",
+            "#CD233F80",
     
         line:{
             width:0
@@ -81,7 +81,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(255,165,0,0.35)",
+            "#FFA88580",
     
         line:{
             width:0
@@ -106,7 +106,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(150,150,150,0.25)",
+            "#E7E2BC80",
     
         line:{
             width:0
@@ -132,7 +132,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(0,150,255,0.35)",
+            "#8ECEEE80",
     
         line:{
             width:0
@@ -155,7 +155,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(0,80,200,0.35)",
+            "#2C7DCD80",
     
         line:{
             width:0

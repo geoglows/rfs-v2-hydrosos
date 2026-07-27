@@ -117,13 +117,12 @@ html, body,
     pointer-events: none;
 }
   
+
 .modal-content {
 
   position: relative;
 
-  width: 45%;
-  max-width: 750px;
-  min-width: 500px;
+  width: 50vw;
 
   height: 100%;
 

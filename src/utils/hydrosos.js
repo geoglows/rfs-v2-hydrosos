@@ -32,14 +32,23 @@ export function computeHydroSOSBands(
         bands.push({
 
             month,
-
+        
+            minimum: Math.min(...values),
+        
             p10: percentile(values,10),
+        
             p25: percentile(values,25),
+        
             median: percentile(values,50),
+        
             p75: percentile(values,75),
+        
             p90: percentile(values,90),
-            p99: percentile(values,99)
-
+        
+            p99: percentile(values,99),
+        
+            maximum: Math.max(...values)
+        
         });
 
     }

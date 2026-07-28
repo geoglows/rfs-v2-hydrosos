@@ -1,4 +1,5 @@
 import Plotly from "plotly.js-dist-min";
+import { buildHydroSOSForecast } from "../utils/buildHydroSOSForecast";
 
 
 export function plotHydroSOSBands(
@@ -35,6 +36,12 @@ export function plotHydroSOSBands(
     
     console.log(currentYearMonthly);
 
+    const forecast =
+    buildHydroSOSForecast(
+        bands,
+        currentYearMonthly
+    );
+
     
     const traces = [];
 
@@ -50,7 +57,7 @@ export function plotHydroSOSBands(
         fill: "tozeroy",
     
         fillcolor:
-            "rgba(180,0,0,0.25)",
+            "#CD233F80",
     
         line:{
             width:0
@@ -74,7 +81,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(255,165,0,0.35)",
+            "#FFA88580",
     
         line:{
             width:0
@@ -99,7 +106,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(150,150,150,0.25)",
+            "#E7E2BC80",
     
         line:{
             width:0
@@ -125,7 +132,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(0,150,255,0.35)",
+            "#8ECEEE80",
     
         line:{
             width:0
@@ -148,7 +155,7 @@ export function plotHydroSOSBands(
         fill:"tonexty",
     
         fillcolor:
-            "rgba(0,80,200,0.35)",
+            "#2C7DCD80",
     
         line:{
             width:0
@@ -189,6 +196,81 @@ export function plotHydroSOSBands(
         "%{y:.0f} m³/s" +
         "<extra></extra>"
 
+    });
+
+    traces.push({
+
+        x: months,
+    
+        y: forecast.maximum,
+    
+        mode: "lines",
+    
+        line: {
+            color: "gray",
+            dash: "dot"
+        },
+    
+        name: "Historical Maximum",
+    
+        hovertemplate:
+            "<b>Historical Maximum</b><br>" +
+            "%{y:.0f} m³/s" +
+            "<extra></extra>"
+    
+    });
+
+    traces.push({
+
+        x: months,
+    
+        y: forecast.minimum,
+    
+        mode: "lines",
+    
+        line: {
+            color: "gray",
+            dash: "dot"
+        },
+    
+        fill: "tonexty",
+    
+        fillcolor: "rgba(180,180,180,.2)",
+    
+        name: "Historical Minimum",
+    
+        hovertemplate:
+            "<b>Historical Minimum</b><br>" +
+            "%{y:.0f} m³/s" +
+            "<extra></extra>"
+    
+    });
+
+    traces.push({
+
+        x: months,
+    
+        y: forecast.median,
+    
+        mode: "lines+markers",
+    
+        line: {
+            color: "#1f77b4",
+            dash: "dash",
+            width: 3
+        },
+    
+        marker: {
+            size: 7
+        },
+    
+        name: "Median Forecast",
+    
+        hovertemplate:
+            "<b>Median Forecast</b><br>" +
+            "%{y:.0f} m³/s" +
+            "<extra></extra>"
+    
     });
 
 

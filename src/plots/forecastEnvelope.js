@@ -144,7 +144,7 @@ export function plotForecastEnvelope(data) {
         
             fill: "tonexty",
         
-            fillcolor: "rgba(220,80,80,.12)",
+            fillcolor: "#CD233F80",
         
             line: { width: 0.5 },
         
@@ -165,7 +165,7 @@ export function plotForecastEnvelope(data) {
         
             fill: "tonexty",
         
-            fillcolor: "rgba(255,170,60,.12)",
+            fillcolor: "#FFA88580",
         
             line: { color: "red",
                 width: 0.5 },
@@ -188,7 +188,7 @@ export function plotForecastEnvelope(data) {
         
             fill: "tonexty",
         
-            fillcolor: "rgba(160,160,160,.12)",
+            fillcolor: "#E7E2BC80",
         
             line: { width: 0.5 },
         
@@ -212,7 +212,7 @@ export function plotForecastEnvelope(data) {
         
             fill: "tonexty",
         
-            fillcolor: "rgba(70,150,220,.12)",
+            fillcolor: "#8ECEEE80",
         
             line: { color: "blue",
                 width: 0.5 },
@@ -234,7 +234,7 @@ export function plotForecastEnvelope(data) {
         
             fill: "tonexty",
         
-            fillcolor: "rgba(40,90,180,.12)",
+            fillcolor: "#2C7DCD80",
         
             line: { width: 0.5 },
         

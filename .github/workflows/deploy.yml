@@ -1,0 +1,30 @@
+name: Deploy
+
+# Builds this app and publishes it to /hydrosos on apps.geoglows.
+# The build, upload and CloudFront invalidation all live in the shared workflow
+# at geoglows/apps.geoglows; this file only names the path to deploy to.
+#
+# Needs, from the organisation: the variables S3_BUCKET_NAME and
+# CLOUDFRONT_DISTRIBUTION_ID, and the secrets AWS_ACCESS_KEY_ID and
+# AWS_SECRET_ACCESS_KEY.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'Branch or tag to deploy (default: main)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    uses: geoglows/apps.geoglows/.github/workflows/deploy-app.yml@main
+    with:
+      app_path: /hydrosos
+      ref: ${{ inputs.ref }}
+    secrets: inherit

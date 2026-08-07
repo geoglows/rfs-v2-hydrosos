@@ -1,106 +1,62 @@
 <body>
-  <div id="app">
+<div id="app">
 
-    <header id="app-header">
+  <header id="app-header">
 
-      <div class="header-left">
-  
-          <img
-              src="/geoglows-logo-nav.png"
-              alt="HydroSOS Logo"
-              class="header-logo"
-          >
-  
-          <h1>HydroSOS Dashboard</h1>
-  
-      </div>
-  
-      <div class="header-right">
-  
-          <input
-              id="basin-search"
-              type="text"
-              placeholder="Search HYBAS_ID..."
-          >
-  
-          <button id="search-button">
-              Search
-          </button>
-  
-      </div>
-  
+    <div class="header-left">
+      <a href="../index.html">
+        <img src="/geoglows-logo-nav.png" alt="HydroSOS Logo" class="header-logo">
+      </a>
+      <h1>HydroSOS Dashboard</h1>
+    </div>
+
+    <div class="header-right">
+      <input id="basin-search" type="text" placeholder="Search HYBAS_ID...">
+      <button id="search-button">Search</button>
+      <button id="toggle-panel" aria-expanded="false" aria-controls="basin-panel">Show Charts</button>
+    </div>
+
   </header>
+
+  <div id="workspace">
 
     <div id="map"></div>
 
-    <div id="basin-modal" class="modal hidden">
-      <div class="modal-content">
-        
-
-        <button id="close-modal">&times;</button>
-
-        <div id="loading" class="loading-overlay" style="display:none;">
-          <div class="spinner"></div>
-        </div>
-
-        <div id="basin-info"></div>
-
-        <div class="accordion">
-
-          <div class="accordion-item active">
-        
-            <button class="accordion-header">
-
+    <aside id="basin-panel" class="panel hidden">
+    <div class="panel-content">
+      <button id="close-modal">&times;</button>
+      <div id="loading" class="loading-overlay" style="display:none;">
+        <div class="spinner"></div>
+      </div>
+      <div id="basin-info"></div>
+      <div class="accordion">
+        <div class="accordion-item active">
+          <button class="accordion-header">
               <span class="accordion-title">
                   <strong>Cumulative Volume</strong>
-          
-                  <div class="accordion-subtitle">
-                      Compare this year's cumulative runoff to the past 30 years.
-                  </div>
+                  <div class="accordion-subtitle">Compare this year's cumulative runoff to the past 30 years.</div>
               </span>
-          
-              <span class="accordion-arrow">&#9656;</span>
-          
+            <span class="accordion-arrow">&#9656;</span>
           </button>
-        
-            <div class="accordion-content">
-        
-              <div id="cumulative-volume" class="plot"></div>
-        
-            </div>
-        
+          <div class="accordion-content">
+            <div id="cumulative-volume" class="plot"></div>
           </div>
-        
-        
-          <div class="accordion-item active">
-        
-            <button class="accordion-header">
-
+        </div>
+        <div class="accordion-item active">
+          <button class="accordion-header">
               <span class="accordion-title">
                   <strong>Monthly HydroSOS Status</strong>
-          
-                  <div class="accordion-subtitle">
-                      Monthly flow conditions relative to the past 30 years.
-                  </div>
+                  <div class="accordion-subtitle">Monthly flow conditions relative to the past 30 years.</div>
               </span>
-          
-              <span class="accordion-arrow">&#9656;</span>
-          
+            <span class="accordion-arrow">&#9656;</span>
           </button>
-        
-            <div class="accordion-content">
-        
-              <div id="hydrosos-bands" class="plot"></div>
-        
-            </div>
-        
-          </div>
-        
-        
-          <div class="accordion-item active">
-        
-            <button class="accordion-header">
 
+          <div class="accordion-content">
+            <div id="hydrosos-bands" class="plot"></div>
+          </div>
+        </div>
+        <div class="accordion-item active">
+          <button class="accordion-header">
               <span class="accordion-title">
                   <strong>Seasonal Outlook</strong>
           
@@ -108,25 +64,21 @@
                       Historical analogs show the likely range of cumulative runoff over the next three months.
                   </div>
               </span>
-          
-              <span class="accordion-arrow">&#9656;</span>
-          
+
+            <span class="accordion-arrow">&#9656;</span>
+
           </button>
-        
-            <div class="accordion-content">
-        
-              <div id="forecast-envelope" class="plot"></div>
-        
-            </div>
-        
+
+          <div class="accordion-content">
+            <div id="forecast-envelope" class="plot"></div>
           </div>
-        
         </div>
+      </div>
     </div>
+
+    </aside>
 
   </div>
 
   <script type="module" src="/src/main.js"></script>
 </body>
-
-

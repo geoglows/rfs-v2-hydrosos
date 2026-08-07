@@ -1,311 +1,210 @@
-import Plotly from "plotly.js-dist-min";
 import { buildHydroSOSForecast } from "../utils/buildHydroSOSForecast";
+import {
+    renderChart,
+    unifiedHover,
+    tooltipDefaults,
+    legendDefaults,
+    titleOptions
+} from "./chartSetup.js";
 
+const MONTH_NAMES = [
+    "Jan","Feb","Mar",
+    "Apr","May","Jun",
+    "Jul","Aug","Sep",
+    "Oct","Nov","Dec"
+];
 
 export function plotHydroSOSBands(
     bands,
     currentYearMonthly
 ) {
 
-    const monthNames = [
-        "Jan","Feb","Mar",
-        "Apr","May","Jun",
-        "Jul","Aug","Sep",
-        "Oct","Nov","Dec"
-    ];
-    
     const months = bands.map(
-        b => monthNames[b.month - 1]
+        b => MONTH_NAMES[b.month - 1]
     );
-
-    const p10 = bands.map(b => b.p10);
-    const p25 = bands.map(b => b.p25);
-    const p75 = bands.map(b => b.p75);
-    const p90 = bands.map(b => b.p90);
-    const p99 = bands.map(b => b.p99);
-
-    console.table(
-        bands.map((b, i) => ({
-            month: b.month,
-            p10: b.p10,
-            p25: b.p25,
-            p75: b.p75,
-            p90: b.p90
-        }))
-    );
-    
-    console.log(currentYearMonthly);
 
     const forecast =
-    buildHydroSOSForecast(
-        bands,
-        currentYearMonthly
-    );
+        buildHydroSOSForecast(
+            bands,
+            currentYearMonthly
+        );
 
-    
-    const traces = [];
+    // Shaded status bands, each filling down to the one before it
+    const datasets = [
 
+        band("Very Dry", bands.map(b => b.p10), "#CD233F80", "origin"),
 
-    // Very Dry boundary
-    traces.push({
+        band("Dry", bands.map(b => b.p25), "#FFA88580", 0),
 
-        x: months,
-        y: p10,
-    
-        mode: "lines",
-    
-        fill: "tozeroy",
-    
-        fillcolor:
-            "#CD233F80",
-    
-        line:{
-            width:0
-        },
-    
-        name:"Very Dry",
-        hoverinfo: "skip"
-    
-    });
-    
+        band("Normal", bands.map(b => b.p75), "#E7E2BC80", 1),
 
+        band("Wet", bands.map(b => b.p90), "#8ECEEE80", 2),
 
-    // Dry
-    traces.push({
+        band("Very Wet", bands.map(b => b.p99), "#2C7DCD80", 3)
 
-        x: months,
-        y: p25,
-    
-        mode:"lines",
-    
-        fill:"tonexty",
-    
-        fillcolor:
-            "#FFA88580",
-    
-        line:{
-            width:0
-        },
+    ];
 
-        hoverinfo: "skip",
-    
-        name:"Dry"
-    
-    });
+    datasets.push({
 
+        label: "Current Year",
 
-    // Normal
+        data: currentYearMonthly,
 
-    traces.push({
+        borderColor: "black",
 
-        x: months,
-        y:p75,
-    
-        mode:"lines",
-    
-        fill:"tonexty",
-    
-        fillcolor:
-            "#E7E2BC80",
-    
-        line:{
-            width:0
-        },
+        borderWidth: 4,
 
-        hoverinfo: "skip",
-    
-        name:"Normal"
-    
-    });
-
-
-
-    // Wet
-
-    traces.push({
-
-        x: months,
-        y:p90,
-    
-        mode:"lines",
-    
-        fill:"tonexty",
-    
-        fillcolor:
-            "#8ECEEE80",
-    
-        line:{
-            width:0
-        },
-
-        hoverinfo: "skip",
-    
-        name:"Wet"
-    
-    });
-
-    // Very Wet
-    traces.push({
-
-        x: months,
-        y:p99,
-    
-        mode:"lines",
-    
-        fill:"tonexty",
-    
-        fillcolor:
-            "#2C7DCD80",
-    
-        line:{
-            width:0
-        },
-
-        hoverinfo: "skip",
-    
-        name:"Very Wet"
-    
-    });
-
-
-
-    // Current year
-
-    traces.push({
-
-        x: months,
-
-        y: currentYearMonthly,
-
-        mode:
-            "lines+markers",
-
-        name:
-            "Current Year",
-
-        line:{
-            color:"black",
-            width:4
-        },
-
-        marker:{
-            size:8
-        },
-        hovertemplate:
-        "<b>Current Year:</b><br>" +
-        "%{y:.0f} m³/s" +
-        "<extra></extra>"
+        pointRadius: 4
 
     });
 
-    traces.push({
+    if (forecast) {
 
-        x: months,
-    
-        y: forecast.maximum,
-    
-        mode: "lines",
-    
-        line: {
-            color: "gray",
-            dash: "dot"
-        },
-    
-        name: "Historical Maximum",
-    
-        hovertemplate:
-            "<b>Historical Maximum</b><br>" +
-            "%{y:.0f} m³/s" +
-            "<extra></extra>"
-    
-    });
+        const maximumIndex = datasets.length;
 
-    traces.push({
+        datasets.push({
 
-        x: months,
-    
-        y: forecast.minimum,
-    
-        mode: "lines",
-    
-        line: {
-            color: "gray",
-            dash: "dot"
-        },
-    
-        fill: "tonexty",
-    
-        fillcolor: "rgba(180,180,180,.2)",
-    
-        name: "Historical Minimum",
-    
-        hovertemplate:
-            "<b>Historical Minimum</b><br>" +
-            "%{y:.0f} m³/s" +
-            "<extra></extra>"
-    
-    });
+            label: "Historical Maximum",
 
-    traces.push({
+            data: forecast.maximum,
 
-        x: months,
-    
-        y: forecast.median,
-    
-        mode: "lines+markers",
-    
-        line: {
-            color: "#1f77b4",
-            dash: "dash",
-            width: 3
-        },
-    
-        marker: {
-            size: 7
-        },
-    
-        name: "Median Forecast",
-    
-        hovertemplate:
-            "<b>Median Forecast</b><br>" +
-            "%{y:.0f} m³/s" +
-            "<extra></extra>"
-    
-    });
+            borderColor: "gray",
 
+            borderDash: [4, 4],
 
-    const layout = {
+            borderWidth: 2,
 
-        title: {
-            text: "HydroSOS Monthly Flow Status"
+            pointRadius: 0
+
+        });
+
+        datasets.push({
+
+            label: "Historical Minimum",
+
+            data: forecast.minimum,
+
+            borderColor: "gray",
+
+            borderDash: [4, 4],
+
+            borderWidth: 2,
+
+            pointRadius: 0,
+
+            fill: maximumIndex,
+
+            backgroundColor: "rgba(180,180,180,0.2)"
+
+        });
+
+        datasets.push({
+
+            label: "Median Forecast",
+
+            data: forecast.median,
+
+            borderColor: "#1f77b4",
+
+            borderDash: [6, 4],
+
+            borderWidth: 3,
+
+            pointRadius: 3.5
+
+        });
+
+    }
+
+    renderChart("hydrosos-bands", {
+
+        type: "line",
+
+        data: {
+
+            labels: months,
+
+            datasets
+
         },
 
-        hovermode: "x unified",
-    
-        xaxis: {
-            title: {
-                text: "Month"
+        options: {
+
+            responsive: true,
+
+            interaction: unifiedHover,
+
+            plugins: {
+
+                title: titleOptions("HydroSOS Monthly Flow Status"),
+
+                legend: {
+                    ...legendDefaults,
+                    position: "top"
+                },
+
+                tooltip: {
+
+                    ...tooltipDefaults,
+
+                    callbacks: {
+
+                        label: item =>
+                            `${item.dataset.label}: ` +
+                            `${item.parsed.y.toFixed(0)} m³/s`
+
+                    }
+
+                }
+
+            },
+
+            scales: {
+
+                x: {
+
+                    title: {
+                        display: true,
+                        text: "Month"
+                    }
+
+                },
+
+                y: {
+
+                    title: {
+                        display: true,
+                        text: "Mean Monthly Flow (m³/s)"
+                    }
+
+                }
+
             }
-        },
-    
-        yaxis: {
-            title: {
-                text: "Mean Monthly Flow (m³/s)"
-            }
-        },
-    
-        showlegend: true
-    
+
+        }
+
+    });
+
+}
+
+function band(label, values, color, fillTarget) {
+
+    return {
+
+        label,
+
+        data: values,
+
+        backgroundColor: color,
+
+        borderWidth: 0,
+
+        pointRadius: 0,
+
+        fill: fillTarget,
+
+        skipTooltip: true
+
     };
-
-    Plotly.newPlot(
-
-        "hydrosos-bands",
-
-        traces,
-
-        layout
-
-    );
 
 }

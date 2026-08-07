@@ -1,5 +1,3 @@
-import Plotly from "plotly.js-dist-min";
-
 export function setupAccordion() {
 
     const headers =
@@ -17,17 +15,8 @@ export function setupAccordion() {
             // Toggle this section instead of closing all others
             item.classList.toggle("active");
 
-            // Give the CSS animation time to finish before resizing Plotly
-            setTimeout(() => {
-
-                const plot =
-                    item.querySelector(".plot");
-
-                if (plot) {
-                    Plotly.Plots.resize(plot);
-                }
-
-            }, 250);
+            // Chart.js resizes itself when the container becomes visible,
+            // so nothing else to do here.
 
         });
 

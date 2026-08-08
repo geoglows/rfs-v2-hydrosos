@@ -10,24 +10,24 @@ export const MONTHS_FORWARD = 3;
 const MONTHS_IN_WINDOW = 12;
 
 export function getRollingMonths() {
-    const currentMonth =
-        new Date().getUTCMonth() + 1;
+  const currentMonth =
+    new Date().getUTCMonth() + 1;
 
-    const months = [];
+  const months = [];
 
-    for (let i = 0; i < MONTHS_IN_WINDOW; i++) {
-        let month = currentMonth - MONTHS_BACK + i;
+  for (let i = 0; i < MONTHS_IN_WINDOW; i++) {
+    let month = currentMonth - MONTHS_BACK + i;
 
-        while (month < 1) {
-            month += 12;
-        }
-
-        while (month > 12) {
-            month -= 12;
-        }
-
-        months.push(month);
+    while (month < 1) {
+      month += 12;
     }
 
-    return months;
+    while (month > 12) {
+      month -= 12;
+    }
+
+    months.push(month);
+  }
+
+  return months;
 }

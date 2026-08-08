@@ -1,6 +1,6 @@
-import { addProtocol } from "maplibre-gl";
-import { Protocol } from "pmtiles";
-import { MAX_MAP_ZOOM, whenStyleReady } from "./initMap.js";
+import {addProtocol} from "maplibre-gl";
+import {Protocol} from "pmtiles";
+import {MAX_MAP_ZOOM, whenStyleReady} from "./initMap.js";
 
 const SOURCE_ID = "basins";
 const SOURCE_LAYER = "basins";
@@ -23,7 +23,7 @@ function selectedFilter(hybasID) {
   return ["==", ["get", "HYBAS_ID"], hybasID];
 }
 
-export async function addBasinLayer(map, { tilesUrl, bounds }, onClick) {
+export async function addBasinLayer(map, {tilesUrl, bounds}, onClick) {
   basinBounds = bounds;
 
   if (!protocolRegistered) {
@@ -89,7 +89,7 @@ export async function addBasinLayer(map, { tilesUrl, bounds }, onClick) {
     const hybasID = event.features[0].properties.HYBAS_ID;
 
     // You are already looking at the basin you clicked, so leave the view alone
-    onClick(selectBasin(hybasID, map, { zoomTo: false }));
+    onClick(selectBasin(hybasID, map, {zoomTo: false}));
   });
 
   map.on("mouseenter", HIT_LAYER_ID, () => {
@@ -101,7 +101,7 @@ export async function addBasinLayer(map, { tilesUrl, bounds }, onClick) {
   });
 }
 
-export function selectBasin(hybasID, map, { zoomTo = true } = {}) {
+export function selectBasin(hybasID, map, {zoomTo = true} = {}) {
   const bounds = basinBounds[hybasID];
 
   if (!bounds) {
@@ -125,5 +125,5 @@ export function selectBasin(hybasID, map, { zoomTo = true } = {}) {
     });
   }
 
-  return { properties: { HYBAS_ID: id } };
+  return {properties: {HYBAS_ID: id}};
 }

@@ -1,31 +1,31 @@
-import { computeMonthlyMeans } from "./monthlyMeans.js";
-import { computeHydroSOSBands } from "./hydrosos.js";
-import { computeCurrentYearMonthly } from "./computeCurrentYearMonthly.js";
+import {computeMonthlyMeans} from "./monthlyMeans.js";
+import {computeHydroSOSBands} from "./hydrosos.js";
+import {computeCurrentYearMonthly} from "./computeCurrentYearMonthly.js";
 
 export function getHydroSOSData(records) {
-    const monthlyMeans =
-        computeMonthlyMeans(records);
+  const monthlyMeans =
+    computeMonthlyMeans(records);
 
-    const currentYear =
-        new Date().getUTCFullYear();
+  const currentYear =
+    new Date().getUTCFullYear();
 
-    const bands =
-        computeHydroSOSBands(
-            monthlyMeans,
-            currentYear
-        );
+  const bands =
+    computeHydroSOSBands(
+      monthlyMeans,
+      currentYear
+    );
 
-    const {
-        currentYearMonthly
-    } =
-        computeCurrentYearMonthly(
-            monthlyMeans
-        );
+  const {
+    currentYearMonthly
+  } =
+    computeCurrentYearMonthly(
+      monthlyMeans
+    );
 
-    return {
-        monthlyMeans,
-        bands,
-        currentYearMonthly,
-        currentYear
-    };
+  return {
+    monthlyMeans,
+    bands,
+    currentYearMonthly,
+    currentYear
+  };
 }

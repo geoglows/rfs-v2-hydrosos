@@ -1,6 +1,6 @@
-import { addProtocol } from "maplibre-gl";
-import { fromArrayBuffer } from "geotiff";
-import { whenStyleReady } from "./initMap.js";
+import {addProtocol} from "maplibre-gl";
+import {fromArrayBuffer} from "geotiff";
+import {whenStyleReady} from "./initMap.js";
 
 export const RASTER_LAYER_ID = "hydrosos-status";
 
@@ -9,36 +9,20 @@ const TILE_SIZE = 256;
 
 // Half the circumference of the Web Mercator world, in metres
 const MERCATOR_MAX = 20037508.342789244;
-
-// Above this the tiles hold less detail than the source, so let MapLibre
-// scale them up instead of us rendering the same pixels at more zoom levels.
 const MAX_ZOOM = 6;
-
 let protocolRegistered = false;
 
 // tifUrl -> Promise of the decoded raster, so the file is only fetched once
 const rasters = new Map();
 
-/**
- * MapLibre has no equivalent of georaster-layer-for-leaflet, and the COGs are
- * EPSG:4326 while MapLibre only renders Web Mercator. The file is small enough
- * to decode whole, so this serves reprojected tiles out of it on demand rather
- * than requiring the COGs be rewritten as EPSG:3857.
- */
 export async function addRasterLayer(map, tifUrl) {
   console.log("Loading TIFF:", tifUrl);
-
   if (!protocolRegistered) {
     addProtocol(PROTOCOL, handleTileRequest);
     protocolRegistered = true;
   }
-
-  // Surfaces a bad file as a rejected promise here, rather than as a pile of
-  // identical per-tile failures later.
   await loadRaster(tifUrl);
-
   await whenStyleReady(map);
-
   map.addSource(RASTER_LAYER_ID, {
     type: "raster",
     tiles: [`${PROTOCOL}://${encodeURIComponent(tifUrl)}/{z}/{x}/{y}`],
@@ -56,36 +40,27 @@ export async function addRasterLayer(map, tifUrl) {
       "raster-fade-duration": 0
     }
   });
-
   console.log("Added raster layer");
-
   return RASTER_LAYER_ID;
 }
 
 async function handleTileRequest(params) {
-  const { tifUrl, z, x, y } = parseTileUrl(params.url);
-
+  const {tifUrl, z, x, y} = parseTileUrl(params.url);
   const raster = await loadRaster(tifUrl);
-
-  return { data: await encodePng(renderTile(raster, z, x, y)) };
+  return {data: await encodePng(renderTile(raster, z, x, y))};
 }
 
 /** hydrosos://<encoded tif url>/{z}/{x}/{y} */
 function parseTileUrl(url) {
   const parts = url.slice(`${PROTOCOL}://`.length).split("/");
-
   const y = Number(parts.pop());
   const x = Number(parts.pop());
   const z = Number(parts.pop());
-
-  return { tifUrl: decodeURIComponent(parts.join("/")), z, x, y };
+  return {tifUrl: decodeURIComponent(parts.join("/")), z, x, y};
 }
 
 function loadRaster(tifUrl) {
-  if (!rasters.has(tifUrl)) {
-    rasters.set(tifUrl, decodeRaster(tifUrl));
-  }
-
+  if (!rasters.has(tifUrl)) rasters.set(tifUrl, decodeRaster(tifUrl));
   return rasters.get(tifUrl);
 }
 
@@ -98,11 +73,8 @@ async function decodeRaster(tifUrl) {
 
   const tiff = await fromArrayBuffer(await response.arrayBuffer());
   const image = await tiff.getImage();
-
   const geoKeys = await image.getGeoKeys();
-
-  const epsg =
-    geoKeys?.ProjectedCSTypeGeoKey ?? geoKeys?.GeographicTypeGeoKey;
+  const epsg = geoKeys?.ProjectedCSTypeGeoKey ?? geoKeys?.GeographicTypeGeoKey;
 
   if (epsg !== 4326 && epsg !== 3857) {
     throw new Error(
@@ -112,9 +84,7 @@ async function decodeRaster(tifUrl) {
 
   const width = image.getWidth();
   const height = image.getHeight();
-
   const [xmin, ymin, xmax, ymax] = image.getBoundingBox();
-
   const raster = {
     epsg,
     width,
@@ -124,27 +94,18 @@ async function decodeRaster(tifUrl) {
     pixelWidth: (xmax - xmin) / width,
     pixelHeight: (ymax - ymin) / height,
     samples: image.getSamplesPerPixel(),
-    pixels: await image.readRasters({ interleave: true })
+    pixels: await image.readRasters({interleave: true})
   };
-
-  console.log(
-    `Decoded raster: ${width}x${height}, EPSG:${epsg}, ` +
-      `${raster.samples} bands`
-  );
-
+  console.log(`Decoded raster: ${width}x${height}, EPSG:${epsg}, ${raster.samples} bands`);
   return raster;
 }
 
 function renderTile(raster, z, x, y) {
   const worldSize = TILE_SIZE * 2 ** z;
 
-  // Longitude depends only on the column and latitude only on the row, so both
-  // sides resolve to a source index once per tile edge rather than per pixel.
   const columns = new Int32Array(TILE_SIZE);
-
   for (let px = 0; px < TILE_SIZE; px++) {
     const fraction = (x * TILE_SIZE + px + 0.5) / worldSize;
-
     const position =
       raster.epsg === 3857
         ? fraction * 2 * MERCATOR_MAX - MERCATOR_MAX
@@ -163,8 +124,8 @@ function renderTile(raster, z, x, y) {
         ? MERCATOR_MAX - fraction * 2 * MERCATOR_MAX
         : // Inverse Web Mercator: this is the step that stretches the
           // equirectangular source out towards the poles
-          (Math.atan(Math.sinh(Math.PI - 2 * Math.PI * fraction)) * 180) /
-          Math.PI;
+        (Math.atan(Math.sinh(Math.PI - 2 * Math.PI * fraction)) * 180) /
+        Math.PI;
 
     rows[py] = Math.floor((raster.ymax - position) / raster.pixelHeight);
   }
@@ -204,10 +165,7 @@ function renderTile(raster, z, x, y) {
 
 async function encodePng(tile) {
   const canvas = new OffscreenCanvas(TILE_SIZE, TILE_SIZE);
-
   canvas.getContext("2d").putImageData(tile, 0, 0);
-
-  const blob = await canvas.convertToBlob({ type: "image/png" });
-
+  const blob = await canvas.convertToBlob({type: "image/png"});
   return blob.arrayBuffer();
 }

@@ -40,7 +40,7 @@ export async function findLatestTif() {
     const url = tifUrl(month);
 
     try {
-      const response = await fetch(url, { method: "HEAD" });
+      const response = await fetch(url, {method: "HEAD"});
 
       if (response.ok) {
         console.log("Found TIFF:", url);

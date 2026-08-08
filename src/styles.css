@@ -1,122 +1,164 @@
-html, body, 
-#app{
+:root {
+    --nav-height: 70px;
+}
+
+html, body,
+#app {
     margin: 0;
     height: 100%;
     font-family: Arial, sans-serif;
-  }
-  
-  #app {
+}
+
+#app {
     display: flex;
     height: 100vh;
     width: 100%;
-  }
-
-  #app {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .maplibregl-map {
-    background: #cfe8ff;
-  }
-
-  #app-header {
-    height: 70px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-  
-    padding-left: 20px;
-  
-    background: #81d4fa;
-    border-bottom: 1px solid #ddd;
-  
-    font-family: sans-serif;
-  }
-  
-  #app-header h1 {
-    margin: 0;
-    font-size: 1.5rem;
-  }
-
-
-
-.header-left {
-
-  display: flex;
-
-  align-items: center;
-
-  gap: 14px;
-
 }
 
-.header-logo {
+#app {
+    display: flex;
+    flex-direction: column;
+}
 
-  height: 42px;
+.maplibregl-map {
+    background: #cfe8ff;
+}
 
-  width: auto;
+/* ------------------------------------------------------------------ *
+ * Nav bar. Mirrors rfs-v2-hydroviewer/src/css/main.css so the two apps
+ * present the same header when served together under apps.geoglows.
+ * ------------------------------------------------------------------ */
+.nav-bar-wrapper {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 0 25px;
+    height: var(--nav-height);
+    background-color: #81d4fa;
+    border-bottom: 1px solid #e9ecef;
+    font-family: sans-serif;
+}
 
+.nav-bar-wrapper .back-to-portal {
+    display: flex;
+    flex-shrink: 0;
+    align-items: center;
+    padding: 6px;
+    transition: background 0.15s ease;
+}
+
+.nav-bar-wrapper .back-to-portal:hover,
+.nav-bar-wrapper .back-to-portal:focus-visible {
+    background: rgba(255, 255, 255, 0.6);
+    outline: none;
+}
+
+/* The source image is 354x60. Constraining the width and leaving both
+   dimensions `auto` lets the intrinsic ratio drive the height; pinning a
+   height instead would let max-width squash the logo horizontally. */
+.nav-bar-wrapper .back-to-portal-logo {
+    max-width: 150px;
+    width: auto;
+    height: auto;
+    display: block;
+}
+
+.nav-bar-wrapper .app-title {
+    margin: 0 0 0 8px;
+    padding-left: 8px;
+    font-size: 2rem;
+    font-weight: bolder;
+    color: #1e293b;
+    /* This title is long enough to reach the header controls on mid-width
+       screens, so it ellipsizes rather than pushing them off the bar. */
+    min-width: 0;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .header-right {
 
-  display: flex;
+    margin-left: auto;
 
-  align-items: center;
+    display: flex;
 
-  gap: 10px;
+    flex-shrink: 0;
 
-  margin-right: 20px;
+    align-items: center;
 
+    gap: 10px;
+
+}
+
+/* Responsive visibility helpers. `.hide-on-small-only` shows by default and is
+   hidden below the breakpoint; `.show-on-small-only` is its inverse. Using
+   `revert` restores each element's own default display (inline for a span,
+   block for a div) instead of forcing one value. */
+.show-on-small-only {
+    display: none;
+}
+
+@media (max-width: 800px) {
+    .nav-bar-wrapper {
+        padding: 0 13px;
+    }
+
+    .hide-on-small-only {
+        display: none;
+    }
+
+    .show-on-small-only {
+        display: revert;
+    }
 }
 
 #basin-search {
 
-  width: 180px;
+    width: 180px;
 
-  padding: 8px 10px;
+    padding: 8px 10px;
 
-  border-radius: 6px;
+    border-radius: 6px;
 
-  border: 1px solid #bbb;
+    border: 1px solid #bbb;
 
 }
 
 #search-button,
 #toggle-panel {
 
-  padding: 8px 14px;
+    padding: 8px 14px;
 
-  cursor: pointer;
+    cursor: pointer;
 
 }
 
 #toggle-panel {
 
-  min-width: 110px;
+    min-width: 110px;
 
 }
-  
-  
+
+
 /* Map and chart panel share the space left over below the header */
 #workspace {
 
-  flex: 1;
+    flex: 1;
 
-  display: flex;
+    display: flex;
 
-  min-height: 0;
+    min-height: 0;
 
 }
 
-  #map {
+#map {
     flex: 1;
     height: 100%;
     min-width: 0;
     background: rgb(139, 197, 220);
-  }
+}
 
 /*
  * The panel is a flex sibling of the map, so opening it splits the row
@@ -125,75 +167,75 @@ html, body,
  */
 .panel {
 
-  flex: 0 0 50%;
+    flex: 0 0 50%;
 
-  height: 100%;
+    height: 100%;
 
-  overflow: hidden;
+    overflow: hidden;
 
-  transition: flex-basis .3s ease;
+    transition: flex-basis .3s ease;
 
 }
 
 .panel.hidden {
 
-  flex-basis: 0;
+    flex-basis: 0;
 
 }
 
 .panel-content {
 
-  position: relative;
+    position: relative;
 
-  width: 50vw;
+    width: 50vw;
 
-  height: 100%;
+    height: 100%;
 
-  box-sizing: border-box;
+    box-sizing: border-box;
 
-  background: white;
+    background: white;
 
-  overflow-y: auto;
+    overflow-y: auto;
 
-  padding: 20px;
+    padding: 20px;
 
-  box-shadow: -8px 0 20px rgba(0,0,0,0.2);
+    box-shadow: -8px 0 20px rgba(0, 0, 0, 0.2);
 
 }
 
 .chart-section {
-  border-top: 1px solid #ddd;
-  padding: 16px 0 20px;
+    border-top: 1px solid #ddd;
+    padding: 16px 0 20px;
 }
 
 .chart-title {
-  margin: 0;
-  font-size: 1.2rem;
+    margin: 0;
+    font-size: 1.2rem;
 }
 
 .plot-description {
 
-  margin-bottom: 16px;
+    margin-bottom: 16px;
 
-  color: #666;
+    color: #666;
 
-  line-height: 1.4;
+    line-height: 1.4;
 
-  font-size: .95rem;
+    font-size: .95rem;
 
 }
 
 .plot {
 
-  position: relative;
+    position: relative;
 
-  width: 100%;
+    width: 100%;
 
-  height: 55vh;
+    height: 55vh;
 
 }
 
-  .loading-overlay {
+.loading-overlay {
 
     position: absolute;
 
@@ -204,7 +246,7 @@ html, body,
     justify-content: center;
     align-items: center;
 
-    background: rgba(255,255,255,0.55);
+    background: rgba(255, 255, 255, 0.55);
 
     z-index: 500;
 
@@ -212,77 +254,77 @@ html, body,
 
 .chart-subtitle {
 
-  margin: 4px 0 12px;
+    margin: 4px 0 12px;
 
-  font-size: 0.85rem;
+    font-size: 0.85rem;
 
-  color: #666;
+    color: #666;
 
-  font-weight: normal;
+    font-weight: normal;
 
-  line-height: 1.3;
+    line-height: 1.3;
 
 }
 
 .spinner {
 
-  width: 55px;
-  height: 55px;
+    width: 55px;
+    height: 55px;
 
-  border: 6px solid #e0e0e0;
-  border-top: 6px solid #2b7cff;
+    border: 6px solid #e0e0e0;
+    border-top: 6px solid #2b7cff;
 
-  border-radius: 50%;
+    border-radius: 50%;
 
-  animation: spin 0.9s linear infinite;
+    animation: spin 0.9s linear infinite;
 
 }
 
 @keyframes spin {
 
-  from {
-      transform: rotate(0deg);
-  }
+    from {
+        transform: rotate(0deg);
+    }
 
-  to {
-      transform: rotate(360deg);
-  }
+    to {
+        transform: rotate(360deg);
+    }
 
 }
 
 
 .loading-box {
 
-  background: white;
+    background: white;
 
-  padding: 20px 30px;
+    padding: 20px 30px;
 
-  border-radius: 10px;
+    border-radius: 10px;
 
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
 
-  font-size: 1.1rem;
+    font-size: 1.1rem;
 
-  font-weight: 500;
+    font-weight: 500;
 
 }
-  
+
 #close-modal {
 
-  position: sticky;
+    position: sticky;
 
-  top: 10px;
+    top: 10px;
 
-  float: right;
+    float: right;
 
-  font-size: 28px;
+    font-size: 28px;
 
-  border: none;
+    border: none;
 
-  background: none;
+    background: none;
 
-  cursor: pointer;
+    cursor: pointer;
 
-  z-index: 1000;
+    z-index: 1000;
 
 }

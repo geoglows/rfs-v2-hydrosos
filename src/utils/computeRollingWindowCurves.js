@@ -1,69 +1,68 @@
-import { MONTHS_BACK, MONTHS_FORWARD } from "./getRollingMonths.js";
+import {MONTHS_BACK, MONTHS_FORWARD} from "./getRollingMonths.js";
 
 export function computeRollingWindowCurves(
-    records,
-    monthsBack = MONTHS_BACK,
-    monthsForward = MONTHS_FORWARD
+  records,
+  monthsBack = MONTHS_BACK,
+  monthsForward = MONTHS_FORWARD
 ) {
-    const today = new Date();
+  const today = new Date();
 
-    // Rolling window relative to today
-    const windowStart = new Date(today);
-    windowStart.setUTCMonth(
-        windowStart.getUTCMonth() - monthsBack
-    );
+  // Rolling window relative to today
+  const windowStart = new Date(today);
+  windowStart.setUTCMonth(
+    windowStart.getUTCMonth() - monthsBack
+  );
 
-    const windowEnd = new Date(today);
-    windowEnd.setUTCMonth(
-        windowEnd.getUTCMonth() + monthsForward
-    );
+  const windowEnd = new Date(today);
+  windowEnd.setUTCMonth(
+    windowEnd.getUTCMonth() + monthsForward
+  );
 
-    const referenceDates = [];
+  const referenceDates = [];
 
-    let d = new Date(windowStart);
+  let d = new Date(windowStart);
 
-    while (d <= windowEnd) {
+  while (d <= windowEnd) {
     referenceDates.push(new Date(d));
-
     d.setUTCDate(d.getUTCDate() + 1);
-}
+  }
 
-    const curves = [];
+  const curves = [];
 
-    const endYears = [
-        ...new Set(records.map(r => r.year))
-    ];
+  const endYears = [
+    ...new Set(records.map(r => r.year))
+  ];
 
-    for (const endYear of endYears) {
-        // Shift today's rolling window into this historical year
-        const start = new Date(windowStart);
-        const end = new Date(windowEnd);
+  for (const endYear of endYears) {
+    // Shift today's rolling window into this historical year
+    const start = new Date(windowStart);
+    const end = new Date(windowEnd);
 
-        const currentEndYear = today.getUTCFullYear();
+    const currentEndYear = today.getUTCFullYear();
 
-        start.setUTCFullYear(
-            start.getUTCFullYear() + (endYear - currentEndYear)
-        );
+    start.setUTCFullYear(
+      start.getUTCFullYear() + (endYear - currentEndYear)
+    );
 
-        end.setUTCFullYear(
-            end.getUTCFullYear() + (endYear - currentEndYear)
-        );
+    end.setUTCFullYear(
+      end.getUTCFullYear() + (endYear - currentEndYear)
+    );
 
-        const curve = records.filter(record => {
-            return (
-                record.date >= start &&
-                record.date <= end
-            );
-        });
+    const curve = records.filter(record => {
+      return (
+        record.date >= start &&
+        record.date <= end
+      );
+    });
 
-        if (curve.length === 0) continue;
+    if (curve.length === 0) continue;
 
-        curves.push({
-            year: endYear,
-            records: curve,
-            referenceDates
-        });
-    }
+    curves.push({
+      year: endYear,
+      records: curve,
+      referenceDates
+    });
+  }
 
-    return curves;
+  return curves;
 }

@@ -10,7 +10,6 @@ import {plotForecastEnvelope} from "./plots/forecastEnvelope.js";
 import {buildRecords} from "./utils/buildRecords.js";
 import {getHydroSOSData} from "./utils/getHydroSOSdata.js";
 import {addBasinLayer, selectBasin} from "./map/basinLayer.js";
-import {setupAccordion} from "./utils/setupAccordion.js";
 import {destroyAllCharts} from "./plots/chartSetup.js";
 
 const map = createMap();
@@ -20,13 +19,13 @@ await addRasterLayer(map, tifUrl);
 const panel = document.getElementById("basin-panel");
 const toggleButton = document.getElementById("toggle-panel");
 
-// The panel takes half the row away from the map, so Leaflet has to
+// The panel takes half the row away from the map, so MapLibre has to
 // remeasure once the width transition has finished.
 function syncPanelState() {
   const open = !panel.classList.contains("hidden");
   toggleButton.textContent = open ? "Hide Charts" : "Show Charts";
   toggleButton.setAttribute("aria-expanded", String(open));
-  setTimeout(() => map.invalidateSize(), 320);
+  setTimeout(() => map.resize(), 320);
 }
 
 function openPanel() {
@@ -55,7 +54,7 @@ toggleButton.addEventListener("click", () => {
 
 // Corrects the url builder so this could work in multiple environments
 const base = import.meta.env.BASE_URL;
-const hydrobasins = await fetch(`${base}hydrobasins_web.geojson`).then(r => r.json());
+const basinBounds = await fetch(`${base}basin_index.json`).then(r => r.json());
 const outletLookup = await fetch(`${base}outlet_lookup.json`).then(r => r.json());
 
 // -------------------------------
@@ -65,11 +64,6 @@ const outletLookup = await fetch(`${base}outlet_lookup.json`).then(r => r.json()
 async function openBasin(feature) {
   openPanel();
   document.querySelector(".panel-content").scrollTop = 0;
-
-  // Reset accordion to all sections open
-  document
-    .querySelectorAll(".accordion-item")
-    .forEach(item => item.classList.add("active"));
 
   const props = feature.properties;
   const riverID = outletLookup[props.HYBAS_ID].riverID;
@@ -93,7 +87,6 @@ async function openBasin(feature) {
       hydroSOSData.currentYearMonthly
     );
     plotForecastEnvelope(data);
-    setupAccordion();
   } catch (error) {
     console.error(error);
     alert("Unable to load basin data.");
@@ -105,7 +98,11 @@ async function openBasin(feature) {
 // -------------------------------
 // Add basin layer
 // -------------------------------
-addBasinLayer(map, hydrobasins, openBasin)
+await addBasinLayer(
+  map,
+  {tilesUrl: `${base}hydrobasins.pmtiles`, bounds: basinBounds},
+  openBasin
+)
 
 function runSearch() {
   const hybasID = searchBox.value.trim();

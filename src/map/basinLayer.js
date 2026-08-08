@@ -1,99 +1,129 @@
-import L from "leaflet";
-let selectedLayer = null;
-const basinLookup = new Map();
-let leafletMap = null;
+import { addProtocol } from "maplibre-gl";
+import { Protocol } from "pmtiles";
+import { MAX_MAP_ZOOM, whenStyleReady } from "./initMap.js";
 
+const SOURCE_ID = "basins";
+const SOURCE_LAYER = "basins";
+const HIT_LAYER_ID = "basins-hit";
+const OUTLINE_LAYER_ID = "basins-outline";
+const SELECTED_FILL_ID = "basins-selected-fill";
+const SELECTED_OUTLINE_ID = "basins-selected-outline";
 
+// Matches nothing until a basin is picked
+const NOTHING_SELECTED = ["==", ["get", "HYBAS_ID"], ""];
 
-function highlightLayer(layer) {
+let protocolRegistered = false;
 
-  if (selectedLayer) {
+// HYBAS_ID -> [west, south, east, north], from public/basin_index.json.
+// Vector tiles cannot tell us the extent of a basin that has never been
+// rendered, so the search box zooms using this instead.
+let basinBounds = {};
 
-      selectedLayer.setStyle({
-
-          fillOpacity: 0,
-          color: "#808080",
-          weight: 1
-
-      });
-
-  }
-
-  layer.setStyle({
-
-      fillOpacity: 0.2,
-      fillColor: "#3388ff",
-      color: "#3388ff",
-      weight: 3
-
-  });
-
-  selectedLayer = layer;
-
+function selectedFilter(hybasID) {
+  return ["==", ["get", "HYBAS_ID"], hybasID];
 }
 
-export function addBasinLayer(map, geojson, onClick) {
+export async function addBasinLayer(map, { tilesUrl, bounds }, onClick) {
+  basinBounds = bounds;
 
-  leafletMap = map;
-
-
-  const layer = L.geoJSON(geojson, {
-
-      style: {
-          fillOpacity: 0,
-          color: "#808080",
-          weight: 1
-      },
-
-      onEachFeature: (feature, l) => {
-
-          const hybasID =
-              String(feature.properties.HYBAS_ID);
-
-          basinLookup.set(hybasID, l);
-
-          l.on("click", () => {
-
-    const feature = selectBasin(
-        hybasID,
-        leafletMap
-    );
-
-    onClick(feature);
-
-});
-
-      }
-
-  });
-
-  layer.addTo(map);
-
-  layer.bringToFront();
-
-  return layer;
-
-}
-
-
-
-
-
-export function selectBasin(hybasID, map) {
-
-  const layer = basinLookup.get(String(hybasID));
-
-  if (!layer) {
-      return null;
+  if (!protocolRegistered) {
+    addProtocol("pmtiles", new Protocol().tile);
+    protocolRegistered = true;
   }
 
-  highlightLayer(layer);
+  await whenStyleReady(map);
 
-  map.fitBounds(layer.getBounds(), {
-      padding: [225, 225],
-      maxZoom: 8
+  map.addSource(SOURCE_ID, {
+    type: "vector",
+    url: `pmtiles://${new URL(tilesUrl, window.location.href).href}`
   });
 
-  return layer.feature;
+  // Invisible, but it is what makes a basin clickable. MapLibre still
+  // hit-tests fills at zero opacity.
+  map.addLayer({
+    id: HIT_LAYER_ID,
+    type: "fill",
+    source: SOURCE_ID,
+    "source-layer": SOURCE_LAYER,
+    paint: {
+      "fill-opacity": 0
+    }
+  });
 
+  map.addLayer({
+    id: OUTLINE_LAYER_ID,
+    type: "line",
+    source: SOURCE_ID,
+    "source-layer": SOURCE_LAYER,
+    paint: {
+      "line-color": "#808080",
+      "line-width": 1
+    }
+  });
+
+  map.addLayer({
+    id: SELECTED_FILL_ID,
+    type: "fill",
+    source: SOURCE_ID,
+    "source-layer": SOURCE_LAYER,
+    filter: NOTHING_SELECTED,
+    paint: {
+      "fill-color": "#3388ff",
+      "fill-opacity": 0.2
+    }
+  });
+
+  map.addLayer({
+    id: SELECTED_OUTLINE_ID,
+    type: "line",
+    source: SOURCE_ID,
+    "source-layer": SOURCE_LAYER,
+    filter: NOTHING_SELECTED,
+    paint: {
+      "line-color": "#3388ff",
+      "line-width": 3
+    }
+  });
+
+  map.on("click", HIT_LAYER_ID, event => {
+    const hybasID = event.features[0].properties.HYBAS_ID;
+
+    // You are already looking at the basin you clicked, so leave the view alone
+    onClick(selectBasin(hybasID, map, { zoomTo: false }));
+  });
+
+  map.on("mouseenter", HIT_LAYER_ID, () => {
+    map.getCanvas().style.cursor = "pointer";
+  });
+
+  map.on("mouseleave", HIT_LAYER_ID, () => {
+    map.getCanvas().style.cursor = "";
+  });
+}
+
+export function selectBasin(hybasID, map, { zoomTo = true } = {}) {
+  const bounds = basinBounds[hybasID];
+
+  if (!bounds) {
+    return null;
+  }
+
+  // The tiles store HYBAS_ID as a number, so the filter has to compare numbers
+  const id = Number(hybasID);
+
+  map.setFilter(SELECTED_FILL_ID, selectedFilter(id));
+  map.setFilter(SELECTED_OUTLINE_ID, selectedFilter(id));
+
+  // A searched basin can be anywhere, so that one still has to be brought
+  // into view.
+  if (zoomTo) {
+    const [west, south, east, north] = bounds;
+
+    map.fitBounds([[west, south], [east, north]], {
+      padding: 100,
+      maxZoom: MAX_MAP_ZOOM
+    });
+  }
+
+  return { properties: { HYBAS_ID: id } };
 }

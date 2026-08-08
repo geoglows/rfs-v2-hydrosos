@@ -14,7 +14,6 @@ const charts = new Map();
  * The <canvas> is created here so the markup only has to provide the div.
  */
 export function renderChart(containerId, config) {
-
     destroyChart(containerId);
 
     const container = document.getElementById(containerId);
@@ -32,31 +31,22 @@ export function renderChart(containerId, config) {
     charts.set(containerId, chart);
 
     return chart;
-
 }
 
 export function destroyChart(containerId) {
-
     const chart = charts.get(containerId);
 
     if (chart) {
-
         chart.destroy();
 
         charts.delete(containerId);
-
     }
-
 }
 
 export function destroyAllCharts() {
-
     for (const id of [...charts.keys()]) {
-
         destroyChart(id);
-
     }
-
 }
 
 /**
@@ -64,52 +54,33 @@ export function destroyAllCharts() {
  * point. Datasets flagged with `skipTooltip` (the shaded bands) stay out of it.
  */
 export const unifiedHover = {
-
     mode: "index",
-
     intersect: false
-
 };
 
 export const tooltipDefaults = {
-
     filter: item => !item.dataset.skipTooltip,
-
     itemSort: (a, b) => b.parsed.y - a.parsed.y
-
 };
 
 /** Keep unlabeled helper datasets out of the legend. */
 export const legendDefaults = {
-
     labels: {
-
         filter: item => Boolean(item.text),
-
         boxHeight: 8,
-
         usePointStyle: false
-
     }
-
 };
 
 export function titleOptions(text) {
-
     return {
-
         display: true,
-
         text,
-
         font: {
             size: 16
         },
-
         padding: {
             bottom: 12
         }
-
     };
-
 }

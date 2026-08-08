@@ -4,7 +4,6 @@ export function computePercentileWaterYearCurve(
     waterYearCurves,
     p
 ) {
-
     if (waterYearCurves.length === 0) {
         throw new Error("No water year curves were provided.");
     }
@@ -13,7 +12,6 @@ export function computePercentileWaterYearCurve(
     const cumulativeVolume = [];
 
     days.forEach((day, index) => {
-
         const values = waterYearCurves
             .map(curve => curve.cumulativeVolume[index])
             .filter(value => value !== undefined);
@@ -21,19 +19,12 @@ export function computePercentileWaterYearCurve(
         cumulativeVolume.push(
             percentile(values, p)
         );
-
     });
 
     return {
-
         name: `P${p}`,
-
         days,
-
         cumulativeVolume,
-
         finalVolume: cumulativeVolume.at(-1)
-
     };
-
 }

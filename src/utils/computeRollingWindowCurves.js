@@ -1,11 +1,10 @@
-// computeRollingWindowCurves.js
+import { MONTHS_BACK, MONTHS_FORWARD } from "./getRollingMonths.js";
 
 export function computeRollingWindowCurves(
     records,
-    monthsBack = 9,
-    monthsForward = 3
+    monthsBack = MONTHS_BACK,
+    monthsForward = MONTHS_FORWARD
 ) {
-
     const today = new Date();
 
     // Rolling window relative to today
@@ -24,11 +23,9 @@ export function computeRollingWindowCurves(
     let d = new Date(windowStart);
 
     while (d <= windowEnd) {
-
     referenceDates.push(new Date(d));
 
     d.setUTCDate(d.getUTCDate() + 1);
-
 }
 
     const curves = [];
@@ -38,7 +35,6 @@ export function computeRollingWindowCurves(
     ];
 
     for (const endYear of endYears) {
-
         // Shift today's rolling window into this historical year
         const start = new Date(windowStart);
         const end = new Date(windowEnd);
@@ -54,28 +50,20 @@ export function computeRollingWindowCurves(
         );
 
         const curve = records.filter(record => {
-
             return (
                 record.date >= start &&
                 record.date <= end
             );
-
         });
 
         if (curve.length === 0) continue;
 
         curves.push({
-
             year: endYear,
-        
             records: curve,
-        
             referenceDates
-        
         });
-
     }
 
     return curves;
-
 }

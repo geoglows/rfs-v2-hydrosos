@@ -1,7 +1,6 @@
-import { getRollingMonths } from "./getRollingMonths.js";
+import { MONTHS_BACK, getRollingMonths } from "./getRollingMonths.js";
 
 export function computeCurrentYearMonthly(monthlyMeans) {
-
     const today = new Date();
 
     const currentYear = today.getUTCFullYear();
@@ -18,19 +17,19 @@ export function computeCurrentYearMonthly(monthlyMeans) {
 
     const currentYearMonthly = [];
 
-    // The first 9 months are observed, the last 3 are future.
-    const observedMonths = rollingMonths.length - 3;
+    // The window opens MONTHS_BACK months before the current one, so the
+    // current month sits at that index and anything past it is still to come.
+    const currentMonthIndex = MONTHS_BACK;
 
     rollingMonths.forEach((month, index) => {
-
         // Determine which calendar year this month belongs to.
         const dataYear =
             month > currentMonth
                 ? currentYear - 1
                 : currentYear;
 
-        // Leave the future 3 months blank.
-        if (index >= observedMonths) {
+        // Leave the months that have not happened yet blank.
+        if (index > currentMonthIndex) {
             currentYearMonthly.push(null);
             return;
         }
@@ -47,12 +46,10 @@ export function computeCurrentYearMonthly(monthlyMeans) {
         currentYearMonthly.push(
             monthlyMeans[dataYear]?.[month] ?? null
         );
-
     });
 
     return {
         currentYear,
         currentYearMonthly
     };
-
 }

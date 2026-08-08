@@ -1,5 +1,4 @@
 export function formatVolume(v) {
-
     if (v == null) return "";
 
     if (v >= 100) {
@@ -26,5 +25,4 @@ export function formatVolume(v) {
         minimumFractionDigits: 3,
         maximumFractionDigits: 3
     })} billion m³`;
-
 }

@@ -1,48 +1,29 @@
-export function buildHydroSOSForecast(
-    bands,
-    currentYearMonthly,
-    monthsAhead = 3
-) {
+export function buildHydroSOSForecast(bands, currentYearMonthly, monthsAhead = 3) {
+  const median = new Array(bands.length).fill(null)
+  const minimum = new Array(bands.length).fill(null)
+  const maximum = new Array(bands.length).fill(null)
 
-    const median = new Array(bands.length).fill(null);
-    const minimum = new Array(bands.length).fill(null);
-    const maximum = new Array(bands.length).fill(null);
+  const lastModeled = currentYearMonthly.findLastIndex(v => v != null)
+  if (lastModeled === -1) {
+    return null;
+  }
 
-    const lastObserved =
-        currentYearMonthly.findLastIndex(
-            v => v != null
-        );
+  // Anchor at the last modeled month
+  median[lastModeled] = currentYearMonthly[lastModeled];
+  minimum[lastModeled] = currentYearMonthly[lastModeled];
+  maximum[lastModeled] = currentYearMonthly[lastModeled];
 
-    if (lastObserved === -1) {
-        return null;
-    }
-
-    // Anchor at the last observed month
-    median[lastObserved] = currentYearMonthly[lastObserved];
-    minimum[lastObserved] = currentYearMonthly[lastObserved];
-    maximum[lastObserved] = currentYearMonthly[lastObserved];
-
-    // Fill the next few months
-    for (let i = 1; i <= monthsAhead; i++) {
-
-        const index = lastObserved + i;
-
-        if (index >= bands.length) break;
-
-        median[index] = bands[index].median;
-        minimum[index] = bands[index].minimum;
-        maximum[index] = bands[index].maximum;
-
-    }
-
-    return {
-
-        median,
-
-        minimum,
-
-        maximum
-
-    };
-
+  // Fill the next few months
+  for (let i = 1; i <= monthsAhead; i++) {
+    const index = lastModeled + i;
+    if (index >= bands.length) break;
+    median[index] = bands[index].median;
+    minimum[index] = bands[index].minimum;
+    maximum[index] = bands[index].maximum;
+  }
+  return {
+    median,
+    minimum,
+    maximum
+  };
 }

@@ -1,5 +1,4 @@
 export function percentile(values, p) {
-
     if (values.length === 0) {
         throw new Error("Cannot compute percentile of an empty array.");
     }
@@ -23,5 +22,4 @@ export function percentile(values, p) {
         (sortedValues[upper] - sortedValues[lower]) *
         (idx - lower)
     );
-
 }

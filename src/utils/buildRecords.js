@@ -1,9 +1,7 @@
 export function buildRecords(data) {
-
     const riverID = data.metadata.river_id;
 
     return data.datetime.map((d, i) => {
-
         const date = new Date(d);
 
         const year = date.getUTCFullYear();
@@ -40,22 +38,15 @@ export function buildRecords(data) {
         const volume = flow * 86400;
 
         return {
-
             date,
-
             year,
             month,
             day,
             dayOfYear,
-
             waterYear,
             waterYearDay,
-
             flow,
             volume
-
         };
-
     });
-
 }

@@ -1,16 +1,43 @@
 const BASE_URL = "https://d2grb3c773p1iz.cloudfront.net/hydrosos/cogs";
 
+// A month's result is published on the 5th of the following month, UTC.
+const PUBLISH_DAY = 5;
+
+// How far back to keep looking if the expected file is not up yet
+const FALLBACK_MONTHS = 6;
+
+/**
+ * The most recent month whose raster should exist: the last completed month
+ * once its result has been published, otherwise the month before that.
+ */
+export function latestAvailableMonth(now = new Date()) {
+  const monthsBack = now.getUTCDate() >= PUBLISH_DAY ? 1 : 2;
+
+  // Day 1 rather than today's date, so month arithmetic can't overflow off the
+  // end of a shorter month. Date.UTC rolls the year back for us.
+  return new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth() - monthsBack, 1)
+  );
+}
+
+function tifUrl(month) {
+  const year = month.getUTCFullYear();
+
+  const paddedMonth =
+    String(month.getUTCMonth() + 1).padStart(2, "0");
+
+  return `${BASE_URL}/${year}-${paddedMonth}.tif`;
+}
+
 export async function findLatestTif() {
-  const today = new Date();
+  const latest = latestAvailableMonth();
 
-  for (let i = 0; i < 6; i++) {
-    const testDate = new Date(today);
-    testDate.setMonth(today.getMonth() - i);
+  for (let i = 0; i < FALLBACK_MONTHS; i++) {
+    const month = new Date(
+      Date.UTC(latest.getUTCFullYear(), latest.getUTCMonth() - i, 1)
+    );
 
-    const year = testDate.getFullYear();
-    const month = String(testDate.getMonth() + 1).padStart(2, "0");
-
-    const url = `${BASE_URL}/${year}-${month}.tif`;
+    const url = tifUrl(month);
 
     try {
       const response = await fetch(url, { method: "HEAD" });

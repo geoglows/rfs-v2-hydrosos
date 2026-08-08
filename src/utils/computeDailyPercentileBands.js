@@ -1,7 +1,6 @@
 import { percentile } from "./percentile.js";
 
 export function computeDailyPercentileBands(curves) {
-
     if (curves.length === 0) {
         return null;
     }
@@ -17,14 +16,12 @@ export function computeDailyPercentileBands(curves) {
     const maximum = [];
 
     for (let i = 0; i < dates.length; i++) {
-
         const values = curves
             .map(curve => curve.cumulativeVolume[i])
             .filter(v => v !== undefined)
             .sort((a, b) => a - b);
 
         if (values.length === 0) {
-
             minimum.push(null);
             p10.push(null);
             p25.push(null);
@@ -52,23 +49,13 @@ export function computeDailyPercentileBands(curves) {
     }
 
     return {
-
         dates,
-
         minimum,
-
         p10,
-
         p25,
-
         median,
-
         p75,
-
         p90,
-
         maximum
-
     };
-
 }

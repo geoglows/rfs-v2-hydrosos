@@ -1,11 +1,8 @@
 import { percentile } from "./percentile.js";
 
 export function computeMedianCurve(curves) {
-
     if (!curves || curves.length === 0) {
-
         return null;
-
     }
 
     // Use the shortest curve so leap years don't cause indexing issues
@@ -18,7 +15,6 @@ export function computeMedianCurve(curves) {
     const cumulativeVolume = [];
 
     for (let i = 0; i < n; i++) {
-
         const values = curves
             .map(curve => curve.cumulativeVolume[i])
             .filter(v => v !== undefined)
@@ -27,15 +23,10 @@ export function computeMedianCurve(curves) {
         cumulativeVolume.push(
             percentile(values, 50)
         );
-
     }
 
     return {
-
         dates,
-
         cumulativeVolume
-
     };
-
 }

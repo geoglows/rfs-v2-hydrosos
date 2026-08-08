@@ -8,13 +8,12 @@ export function computeMonthlyMeans(records, field ="flow") {
             groups[key] = [];
 
         groups[key].push(r[field]);
-
     });
 
     const monthlyMeans = {};
 
     Object.entries(groups).forEach(([key, values])=> {
-        const [year, month] = 
+        const [year, month] =
         key.split("-").map(Number);
 
         if (!monthlyMeans[year])
@@ -26,7 +25,7 @@ export function computeMonthlyMeans(records, field ="flow") {
 
     monthlyMeans[year][month] = mean;
     }
-    ) 
-    
+    )
+
     return monthlyMeans
 }

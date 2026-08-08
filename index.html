@@ -29,51 +29,23 @@
         <div class="spinner"></div>
       </div>
       <div id="basin-info"></div>
-      <div class="accordion">
-        <div class="accordion-item active">
-          <button class="accordion-header">
-              <span class="accordion-title">
-                  <strong>Cumulative Volume</strong>
-                  <div class="accordion-subtitle">Compare this year's cumulative runoff to the past 30 years.</div>
-              </span>
-            <span class="accordion-arrow">&#9656;</span>
-          </button>
-          <div class="accordion-content">
-            <div id="cumulative-volume" class="plot"></div>
-          </div>
-        </div>
-        <div class="accordion-item active">
-          <button class="accordion-header">
-              <span class="accordion-title">
-                  <strong>Monthly HydroSOS Status</strong>
-                  <div class="accordion-subtitle">Monthly flow conditions relative to the past 30 years.</div>
-              </span>
-            <span class="accordion-arrow">&#9656;</span>
-          </button>
+      <section class="chart-section">
+        <h2 class="chart-title">Monthly HydroSOS Status</h2>
+        <p class="chart-subtitle">Monthly flow conditions relative to the past 30 years.</p>
+        <div id="hydrosos-bands" class="plot"></div>
+      </section>
 
-          <div class="accordion-content">
-            <div id="hydrosos-bands" class="plot"></div>
-          </div>
-        </div>
-        <div class="accordion-item active">
-          <button class="accordion-header">
-              <span class="accordion-title">
-                  <strong>Seasonal Outlook</strong>
-          
-                  <div class="accordion-subtitle">
-                      Historical analogs show the likely range of cumulative runoff over the next three months.
-                  </div>
-              </span>
+      <section class="chart-section">
+        <h2 class="chart-title">Seasonal Outlook</h2>
+        <p class="chart-subtitle">Historical analogs show the likely range of cumulative runoff over the next three months.</p>
+        <div id="forecast-envelope" class="plot"></div>
+      </section>
 
-            <span class="accordion-arrow">&#9656;</span>
-
-          </button>
-
-          <div class="accordion-content">
-            <div id="forecast-envelope" class="plot"></div>
-          </div>
-        </div>
-      </div>
+      <section class="chart-section">
+        <h2 class="chart-title">Cumulative Volume</h2>
+        <p class="chart-subtitle">Compare this year's cumulative runoff to the past 30 years.</p>
+        <div id="cumulative-volume" class="plot"></div>
+      </section>
     </div>
 
     </aside>

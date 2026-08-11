@@ -328,3 +328,70 @@ html, body,
     z-index: 1000;
 
 }
+
+.hydrosos-legend {
+
+    background: white;
+
+    padding: 10px 12px;
+
+    border-radius: 6px;
+
+    box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+
+    font-size: 13px;
+
+    line-height: 20px;
+
+}
+
+.hydrosos-legend-title {
+
+    margin-bottom: 5px;
+
+    font-size: 14px;
+
+}
+
+.hydrosos-legend-item {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 7px;
+
+}
+
+.hydrosos-color {
+
+    width: 14px;
+    height: 14px;
+
+    display: inline-block;
+
+    border: 1px solid #999;
+
+    border-radius: 2px;
+
+}
+
+.hydrosos-color.very-dry {
+    background: #CD233F;
+}
+
+.hydrosos-color.dry {
+    background: #FFA885;
+}
+
+.hydrosos-color.normal {
+    background: #E7E2BC;
+}
+
+.hydrosos-color.wet {
+    background: #8ECEEE;
+}
+
+.hydrosos-color.very-wet {
+    background: #2C7DCD;
+}

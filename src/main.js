@@ -11,6 +11,9 @@ import {buildRecords} from "./utils/buildRecords.js";
 import {getHydroSOSData} from "./utils/getHydroSOSdata.js";
 import {addBasinLayer, selectBasin} from "./map/basinLayer.js";
 import {destroyAllCharts} from "./plots/chartSetup.js";
+import {plotAnnualRunoff} from "./plots/yearlyVolume.js";
+import {computeHydrologicSummary} from "./utils/computeHydrologicSummary.js";
+import {updateHydrologicSummary} from "./utils/updateHydrologicSummary.js";
 
 const map = createMap();
 const tifUrl = await findLatestTif();
@@ -68,12 +71,6 @@ async function openBasin(feature) {
   const props = feature.properties;
   const riverID = outletLookup[props.HYBAS_ID].riverID;
 
-  document.getElementById("basin-info").innerHTML = `
-      <h2>Basin Information</h2>
-      <p><strong>Hydrobasin ID:</strong> ${props.HYBAS_ID}</p>
-      <p><strong>Outlet River ID:</strong> ${riverID}</p>
-  `;
-
   document.getElementById("loading").style.display = "flex";
 
   try {
@@ -82,13 +79,28 @@ async function openBasin(feature) {
     const records = buildRecords(data);
     const hydroSOSData = getHydroSOSData(records);
 
+    // The status summary reads the same bands the chart below it shades
+    updateHydrologicSummary(
+      computeHydrologicSummary(
+        records,
+        hydroSOSData.bands,
+        hydroSOSData.currentYearMonthly
+      ),
+      props.HYBAS_ID,
+      riverID
+    );
+
     plotHydroSOSBands(
       hydroSOSData.bands,
       hydroSOSData.currentYearMonthly
     );
     plotForecastEnvelope(data);
+    plotAnnualRunoff(data);
   } catch (error) {
     console.error(error);
+    // Leaves the basin IDs on screen, so the panel does not keep showing
+    // the status of whichever basin was open before this one
+    updateHydrologicSummary(null, props.HYBAS_ID, riverID);
     alert("Unable to load basin data.");
   } finally {
     document.getElementById("loading").style.display = "none";

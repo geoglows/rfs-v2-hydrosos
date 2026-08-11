@@ -1,132 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>HydroSOS Water Monitor | GEOGLOWS</title>
+  <meta content="Monitor water status and drought conditions globally with maps and charts from the HydroSOS Water Status Monitor." name="description"/>
+  <meta content="HydroSOS, WMO, drought monitoring, surface water, streamflow status, GEOGLOWS" name="keywords"/>
+  <meta content="#f8fafc" name="theme-color"/>
+
+  <meta content="HydroSOS Water Monitor | GEOGLOWS" property="og:title"/>
+  <meta content="Monitor water status and drought conditions globally with maps and charts from the HydroSOS Water Status Monitor." property="og:description"/>
+  <meta content="website" property="og:type"/>
+  <meta content="https://cdn.apps.geoglows.org/static/images/geoglows-logo-nav.webp" property="og:image"/>
+</head>
 <body>
-  <div id="app">
+<div id="app">
 
-    <header id="app-header">
+  <header class="nav-bar-wrapper" id="app-header">
 
-      <div class="header-left">
-  
-          <img
-              src="/geoglows-logo-nav.png"
-              alt="HydroSOS Logo"
-              class="header-logo"
-          >
-  
-          <h1>HydroSOS Dashboard</h1>
-  
-      </div>
-  
-      <div class="header-right">
-  
-          <input
-              id="basin-search"
-              type="text"
-              placeholder="Search HYBAS_ID..."
-          >
-  
-          <button id="search-button">
-              Search
-          </button>
-  
-      </div>
-  
+    <a aria-label="GEOGLOWS Portal" class="back-to-portal" href="/" title="GEOGLOWS Portal">
+      <img alt="GEOGLOWS" class="back-to-portal-logo" height="60" src="https://cdn.apps.geoglows.org/static/images/geoglows-logo-nav.webp" width="354">
+    </a>
+
+    <h1 class="app-title">
+      <span class="hide-on-small-only">HydroSOS Water Monitor</span>
+      <span class="show-on-small-only">HydroSOS</span>
+    </h1>
+
+    <div class="header-right">
+      <input id="basin-search" placeholder="Search HYBAS_ID..." type="text">
+      <button id="search-button">Search</button>
+      <button aria-controls="basin-panel" aria-expanded="false" id="toggle-panel">Show Charts</button>
+    </div>
+
   </header>
+
+  <div id="workspace">
 
     <div id="map"></div>
 
-    <div id="basin-modal" class="modal hidden">
-      <div class="modal-content">
-        
-
+    <aside class="panel hidden" id="basin-panel">
+      <div class="panel-content">
         <button id="close-modal">&times;</button>
-
-        <div id="loading" class="loading-overlay" style="display:none;">
+        <div class="loading-overlay" id="loading" style="display:none;">
           <div class="spinner"></div>
         </div>
-
         <div id="basin-info"></div>
+        <section class="chart-section">
+          <h2 class="chart-title">Monthly HydroSOS Status</h2>
+          <p class="chart-subtitle">Monthly flow conditions relative to the past 30 years.</p>
+          <div class="plot" id="hydrosos-bands"></div>
+        </section>
 
-        <div class="accordion">
+        <section class="chart-section">
+          <h2 class="chart-title">Seasonal Outlook</h2>
+          <p class="chart-subtitle">Historical analogs show the likely range of cumulative runoff over the next three months.</p>
+          <div class="plot" id="forecast-envelope"></div>
+        </section>
 
-          <div class="accordion-item active">
-        
-            <button class="accordion-header">
+        <section class="chart-section">
+          <h2 class="chart-title">Cumulative Volume</h2>
+          <p class="chart-subtitle">Compare this year's cumulative runoff to the past 30 years.</p>
+          <div class="plot" id="cumulative-volume"></div>
+        </section>
+      </div>
 
-              <span class="accordion-title">
-                  <strong>Cumulative Volume</strong>
-          
-                  <div class="accordion-subtitle">
-                      Compare this year's cumulative runoff to the past 30 years.
-                  </div>
-              </span>
-          
-              <span class="accordion-arrow">&#9656;</span>
-          
-          </button>
-        
-            <div class="accordion-content">
-        
-              <div id="cumulative-volume" class="plot"></div>
-        
-            </div>
-        
-          </div>
-        
-        
-          <div class="accordion-item active">
-        
-            <button class="accordion-header">
-
-              <span class="accordion-title">
-                  <strong>Monthly HydroSOS Status</strong>
-          
-                  <div class="accordion-subtitle">
-                      Monthly flow conditions relative to the past 30 years.
-                  </div>
-              </span>
-          
-              <span class="accordion-arrow">&#9656;</span>
-          
-          </button>
-        
-            <div class="accordion-content">
-        
-              <div id="hydrosos-bands" class="plot"></div>
-        
-            </div>
-        
-          </div>
-        
-        
-          <div class="accordion-item active">
-        
-            <button class="accordion-header">
-
-              <span class="accordion-title">
-                  <strong>Seasonal Outlook</strong>
-          
-                  <div class="accordion-subtitle">
-                      Historical analogs show the likely range of cumulative runoff over the next three months.
-                  </div>
-              </span>
-          
-              <span class="accordion-arrow">&#9656;</span>
-          
-          </button>
-        
-            <div class="accordion-content">
-        
-              <div id="forecast-envelope" class="plot"></div>
-        
-            </div>
-        
-          </div>
-        
-        </div>
-    </div>
+    </aside>
 
   </div>
 
-  <script type="module" src="/src/main.js"></script>
+  <script src="/src/main.js" type="module"></script>
 </body>
-
-
+</html>

@@ -1,57 +1,42 @@
-import { percentile } from "./percentile";
+import {percentile} from "./percentile";
 
-import { getRollingMonths } from "./getRollingMonths.js";
+import {getRollingMonths} from "./getRollingMonths.js";
 
 export function computeHydroSOSBands(
-    monthlyMeans,
-    referenceYear
-){
+  monthlyMeans,
+  referenceYear
+) {
+  const bands = [];
 
-    const bands = [];
+  const rollingMonths = getRollingMonths();
 
-    const rollingMonths = getRollingMonths();
+  for (const month of rollingMonths) {
+    const values = [];
 
-    for (const month of rollingMonths) {
+    for (
+      let y = referenceYear - 30;
+      y < referenceYear;
+      y++
+    ) {
+      const v = monthlyMeans[y]?.[month];
 
-        const values = [];
-
-        for(
-            let y = referenceYear - 30;
-            y < referenceYear;
-            y++
-        ){
-
-            const v = monthlyMeans[y]?.[month];
-
-            if(v !== undefined){
-                values.push(v);
-            }
-
-        }
-
-        bands.push({
-
-            month,
-        
-            minimum: Math.min(...values),
-        
-            p10: percentile(values,10),
-        
-            p25: percentile(values,25),
-        
-            median: percentile(values,50),
-        
-            p75: percentile(values,75),
-        
-            p90: percentile(values,90),
-        
-            p99: percentile(values,99),
-        
-            maximum: Math.max(...values)
-        
-        });
-
+      if (v !== undefined) {
+        values.push(v);
+      }
     }
 
-    return bands;
+    bands.push({
+      month,
+      minimum: Math.min(...values),
+      p10: percentile(values, 10),
+      p25: percentile(values, 25),
+      median: percentile(values, 50),
+      p75: percentile(values, 75),
+      p90: percentile(values, 90),
+      p99: percentile(values, 99),
+      maximum: Math.max(...values)
+    });
+  }
+
+  return bands;
 }

@@ -1,172 +1,132 @@
-import Plotly from "plotly.js-dist-min";
-import { computeRollingWindowCurves } from "../utils/computeRollingWindowCurves";
-import { buildRecords } from "../utils/buildRecords";
-import { computeMedianCurve } from "../utils/computeMedianCurve";
-import { formatVolume } from "../utils/formatVolume";
+import {computeRollingWindowCurves} from "../utils/computeRollingWindowCurves";
+import {buildRecords} from "../utils/buildRecords";
+import {computeMedianCurve} from "../utils/computeMedianCurve";
+import {legendDefaults, renderChart, titleOptions, tooltipDefaults, unifiedHover} from "./chartSetup.js";
 
 export function plotCumulativeVolume(data) {
+  const records = buildRecords(data);
 
-    const records = buildRecords(data);
+  const curves =
+    computeRollingWindowCurves(records);
 
-    const curves =
-        computeRollingWindowCurves(records);
+  const cumulativeCurves = curves.map(curve => {
+    let runningTotal = 0;
 
-        const cumulativeCurves = curves.map(curve => {
+    return {
+      year: curve.year,
+      dates: curve.referenceDates,
+      cumulativeVolume: curve.records.map(record => {
+        runningTotal += record.volume;
 
-            let runningTotal = 0;
-        
-            return {
-        
-                year: curve.year,
-        
-                dates: curve.referenceDates,
-        
-                cumulativeVolume: curve.records.map(record => {
-        
-                    runningTotal += record.volume;
-        
-                    return runningTotal;
-        
-                })
-        
-            };
-        
-        });
+        return runningTotal;
+      })
+    };
+  });
 
-        
+  // Each historical year as a faint gray line in the background.
+  //
+  // Chart.js draws datasets from the highest order to the lowest, so the
+  // background needs the highest order to end up underneath. Without this
+  // the gray mass is drawn over the two lines that matter.
+  const datasets = cumulativeCurves.map(curve => ({
+    label: "",
+    data: toPoints(curve.dates, curve.cumulativeVolume),
+    borderColor: "rgba(204, 204, 204, 0.5)",
+    borderWidth: 1,
+    pointRadius: 0,
+    order: 2,
+    skipTooltip: true
+  }));
 
-    const traces = cumulativeCurves.map(curve => ({
+  const today = new Date();
 
-        x: curve.dates,
-
-        y: curve.cumulativeVolume.map(
-            volume => volume / 1e9
-        ),
-
-        mode: "lines",
-
-        name: curve.waterYear,
-
-        line: {
-            color: "#cccccc",
-            width: 1
-        },
-        opacity: 0.5,
-        showlegend: false,
-        hoverinfo: "skip"
-
-}));
-const today = new Date();
-
-const currentWaterYear =
+  const currentWaterYear =
     today.getUTCMonth() >= 9
-        ? today.getUTCFullYear() + 1
-        : today.getUTCFullYear();
+      ? today.getUTCFullYear() + 1
+      : today.getUTCFullYear();
 
-const recentCurves = cumulativeCurves
+  const recentCurves = cumulativeCurves
     .filter(curve => curve.year < today.getUTCFullYear()) // exclude current incomplete WY
     .sort((a, b) => a.year - b.year)
     .slice(-30);
 
-const median = computeMedianCurve(recentCurves);
+  const median = computeMedianCurve(recentCurves);
 
+  datasets.push({
+    label: "30-year Median",
+    data: toPoints(median.dates, median.cumulativeVolume),
+    borderColor: "#1f77b4",
+    borderWidth: 4,
+    pointRadius: 0,
+    order: 1
+  });
 
+  const currentCurve = cumulativeCurves.find(
+    c => c.year === currentWaterYear
+  );
 
-traces.push({
+  if (currentCurve) {
+    datasets.push({
+      label: "Current Water Year",
+      data: toPoints(
+        currentCurve.dates,
+        currentCurve.cumulativeVolume
+      ),
+      borderColor: "black",
+      borderWidth: 4,
+      pointRadius: 0,
+      order: 0
+    });
+  }
 
-    x: median.dates,
-    y: median.cumulativeVolume.map(
-        volume => volume / 1e9
-    ),
-
-    mode: "lines",
-
-    name: "30-year Median",
-
-    line: {
-        color: "#1f77b4",
-        width: 4
-    },
-    hovertemplate:
-    "<b>Median:</b><br>" +
-    "%{y:.1f} billion m³" +
-    "<extra></extra>"
-
-});
-
-        const currentCurve = cumulativeCurves.find(
-            c => c.year === currentWaterYear
-        );
-
-        if (currentCurve) {
-
-            traces.push({
-        
-                x: currentCurve.dates,
-                y: currentCurve.cumulativeVolume.map(
-                    volume => volume / 1e9
-                ),
-        
-                mode: "lines",
-        
-                name: "Current Water Year",
-        
-                line: {
-                    color: "black",
-                    width: 4
-                },
-                hovertemplate:
-                "<b>Current Year:</b><br>" +
-                "%{y:.1f} billion m³" +
-                "<extra></extra>"
-        
-            });
-        
+  renderChart("cumulative-volume", {
+    type: "line",
+    data: {datasets},
+    options: {
+      responsive: true,
+      interaction: unifiedHover,
+      plugins: {
+        title: titleOptions("Historical Cumulative Volume"),
+        legend: {
+          ...legendDefaults,
+          position: "top"
+        },
+        tooltip: {
+          ...tooltipDefaults,
+          callbacks: {
+            label: item =>
+              `${item.dataset.label}: ` +
+              `${item.parsed.y.toFixed(1)} billion m³`
+          }
         }
-    
-        const layout = {
-
-            title: {
-                text: "Historical Cumulative Volume",
-                x: 0.5
-            },
-
-            hovermode: "x unified",
-        
-            xaxis: {
-
-                title: "Date",
-            
-                type: "date",
-            
-                tickformat: "%b",
-            
-                dtick: "M1"
-            
-            },
-        
-            yaxis: {
-                title: {
-                    text: "Cumulative Volume (billion m³)"
-                }
-            },
-        
-            showlegend: true,
-            legend: {
-                orientation: "h",
-                y: 1.1
-            }
-        
-        };
-
-    Plotly.newPlot(
-        "cumulative-volume",
-        traces,
-        layout
-    );
-
+      },
+      scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "month",
+            displayFormats: {month: "MMM"},
+            tooltipFormat: "d MMM yyyy"
+          },
+          title: {
+            display: true,
+            text: "Date"
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Cumulative Volume (billion m³)"
+          }
+        }
+      }
+    }
+  });
 }
 
-
-
-
+function toPoints(dates, volumes) {
+  return volumes.map((volume, index) => ({
+    x: dates[index],
+    y: volume == null ? null : volume / 1e9
+  }));
+}

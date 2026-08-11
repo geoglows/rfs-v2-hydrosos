@@ -16,7 +16,6 @@ gdf = gdf[
     ]
 ]
 
-
 gdf["geometry"] = gdf["geometry"].simplify(
     0.01,
     preserve_topology=True
@@ -26,5 +25,3 @@ gdf.to_file(
     "hydrobasins_web.geojson",
     driver="GeoJSON"
 )
-
-

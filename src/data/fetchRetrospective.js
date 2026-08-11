@@ -1,13 +1,9 @@
 'use strict';
 
 // Reads the GEOGLOWS v2 retrospective straight from the public Zarr archive instead of the REST
-// API. Approach copied from rfsjs v2 (src/v2/retrospective.js): resolve the river ID to its index
+// API. Approach copied from riverforecastsystem v2 (src/v2/retrospective.js): resolve the river ID to its index
 // on the river_id coordinate, then read the discharge column for that index.
-import {
-  fetchZarrValues,
-  getCoordinateValues,
-  getTimeCoordinateValues,
-} from "./zarrFetchers.js";
+import {fetchZarrValues, getCoordinateValues, getTimeCoordinateValues,} from "./zarrFetchers.js";
 
 const cloudfrontUri = "https://d2grb3c773p1iz.cloudfront.net";
 const dischargeVariable = "Q";

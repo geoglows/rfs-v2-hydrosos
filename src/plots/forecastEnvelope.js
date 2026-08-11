@@ -1,442 +1,214 @@
-import Plotly from "plotly.js-dist-min";
-
-import { buildRecords } from "../utils/buildRecords.js";
-import { getHistoricalForecastCurves } from "../utils/getHistoricalForecastCurves.js";
-import { computeForecastEnvelope } from "../utils/computeForecastEnvelope.js";
-import { computeDailyPercentileBands } from "../utils/computeDailyPercentileBands.js";
-import { computeRollingWindowCurves } from "../utils/computeRollingWindowCurves.js";
-
+import {buildRecords} from "../utils/buildRecords.js";
+import {getHistoricalForecastCurves} from "../utils/getHistoricalForecastCurves.js";
+import {computeForecastEnvelope} from "../utils/computeForecastEnvelope.js";
+import {computeDailyPercentileBands} from "../utils/computeDailyPercentileBands.js";
+import {computeRollingWindowCurves} from "../utils/computeRollingWindowCurves.js";
+import {legendDefaults, renderChart, titleOptions, tooltipDefaults, unifiedHover} from "./chartSetup.js";
 
 export function plotForecastEnvelope(data) {
+  const records = buildRecords(data);
 
-    const records = buildRecords(data);
-   
-    const rollingCurves =
+  const rollingCurves =
     computeRollingWindowCurves(records);
 
-    const cumulativeCurves = rollingCurves.map(curve => {
+  const cumulativeCurves = rollingCurves.map(curve => {
+    let runningTotal = 0;
 
-        let runningTotal = 0;
-    
-        return {
-    
-            year: curve.year,
-    
-            dates: curve.referenceDates,
-    
-            cumulativeVolume: curve.records.map(record => {
-    
-                runningTotal += record.volume;
-    
-                return runningTotal;
-    
-            })
-    
-        };
-    
-    });
+    return {
+      year: curve.year,
+      dates: curve.referenceDates,
+      cumulativeVolume: curve.records.map(record => {
+        runningTotal += record.volume;
 
-    const today = new Date();
+        return runningTotal;
+      })
+    };
+  });
 
-        const historicalCurves =
-        cumulativeCurves
-            .filter(c => c.year < today.getUTCFullYear())
-            .sort((a,b) => a.year - b.year)
-            .slice(-30);
+  const today = new Date();
 
-    const currentCurve =
+  const historicalCurves =
+    cumulativeCurves
+      .filter(c => c.year < today.getUTCFullYear())
+      .sort((a, b) => a.year - b.year)
+      .slice(-30);
+
+  const currentCurve =
     cumulativeCurves.find(
-        c => c.year === today.getUTCFullYear()
+      c => c.year === today.getUTCFullYear()
     );
 
-    const lastObservedDate =
+  const lastModeledDate =
     currentCurve.dates[currentCurve.cumulativeVolume.length - 1];
 
-
-    const historicalForecasts =
+  const historicalForecasts =
     getHistoricalForecastCurves(
-        historicalCurves,
-        currentCurve,
-        lastObservedDate
+      historicalCurves,
+      currentCurve,
+      lastModeledDate
     );
 
-    const forecast =
-        computeForecastEnvelope(
-            historicalForecasts
-        );
+  const forecast =
+    computeForecastEnvelope(
+      historicalForecasts
+    );
 
-        const dailyBands =
-        computeDailyPercentileBands(historicalCurves);
+  const dailyBands =
+    computeDailyPercentileBands(historicalCurves);
 
-        const scale = 1e9;
+  const currentVolume =
+    currentCurve.cumulativeVolume.at(-1);
 
-    dailyBands.minimum = dailyBands.minimum.map(v => v == null ? null : v / scale);
-    dailyBands.p10     = dailyBands.p10.map(v => v == null ? null : v / scale);
-    dailyBands.p25     = dailyBands.p25.map(v => v == null ? null : v / scale);
-    dailyBands.p75     = dailyBands.p75.map(v => v == null ? null : v / scale);
-    dailyBands.p90     = dailyBands.p90.map(v => v == null ? null : v / scale);
-    dailyBands.maximum = dailyBands.maximum.map(v => v == null ? null : v / scale);
+  // Forecast is stored as volume added since the last modeled day,
+  // so shift it up onto the end of the modeled curve.
+  const shifted = values =>
+    values.map(
+      v => v == null ? null : (currentVolume + v) / 1e9
+    );
 
-        const currentVolume =
-        currentCurve.cumulativeVolume.at(-1);
+  const bandPoints = values =>
+    toPoints(dailyBands.dates, values);
 
-        const observedVolume =
-    currentCurve.cumulativeVolume.map(v => v / 1e9);
+  const forecastPoints = key => {
+    const values = shifted(forecast[key]);
 
-    const currentX =
-        currentCurve.dates.at(-1);
+    return forecast.dates.map((date, index) => ({
+      x: date,
+      y: values[index]
+    }));
+  };
 
-        const forecastMedian =
-        forecast.median.map(
-            v => (currentVolume + v) / 1e9
-        );
+  const datasets = [];
 
-    const forecastP25 =
-        forecast.p25.map(
-            v => (currentVolume + v) / 1e9
-        );
+  // Historical percentile bands, each filling down to the one before it
+  datasets.push({
+    label: "",
+    data: bandPoints(dailyBands.minimum),
+    borderWidth: 0,
+    pointRadius: 0,
+    order: 3,
+    skipTooltip: true
+  });
 
-    const forecastP75 =
-        forecast.p75.map(
-            v => (currentVolume + v) / 1e9
-        );
+  const bands = [
+    ["Very Dry", dailyBands.p10, "#CD233F80"],
+    ["Dry", dailyBands.p25, "#FFA88580"],
+    ["Normal", dailyBands.p75, "#E7E2BC80"],
+    ["Wet", dailyBands.p90, "#8ECEEE80"],
+    ["Very Wet", dailyBands.maximum, "#2C7DCD80"]
+  ];
 
-    const forecastMin =
-        forecast.minimum.map(
-            v => (currentVolume + v) / 1e9
-        );
+  for (const [label, values, color] of bands) {
+    datasets.push({
+      label,
+      data: bandPoints(values),
+      backgroundColor: color,
+      borderColor: "rgba(0,0,0,0.15)",
+      borderWidth: 0.5,
+      pointRadius: 0,
+      fill: datasets.length - 1,
+      // Chart.js draws highest order first, so the shading lands under
+      // every line. `fill` still refers to dataset indices, which order
+      // does not touch.
+      order: 3,
+      skipTooltip: true
+    });
+  }
 
-    const forecastMax =
-        forecast.maximum.map(
-            v => (currentVolume + v) / 1e9
-        );
+  const forecastMaxIndex = datasets.length;
 
+  datasets.push({
+    label: "Historical Max",
+    data: forecastPoints("maximum"),
+    borderColor: "green",
+    borderDash: [6, 4],
+    borderWidth: 2,
+    pointRadius: 0,
+    order: 2
+  });
 
-        // plot
+  datasets.push({
+    label: "Historical Min",
+    data: forecastPoints("minimum"),
+    borderColor: "red",
+    borderDash: [6, 4],
+    borderWidth: 2,
+    pointRadius: 0,
+    fill: forecastMaxIndex,
+    backgroundColor: "rgba(180,180,180,0.25)",
+    order: 2
+  });
 
-        const traces = [];
+  datasets.push({
+    label: "30-year Median Forecast",
+    data: forecastPoints("median"),
+    borderColor: "#1f77b4",
+    borderDash: [6, 4],
+    borderWidth: 4,
+    pointRadius: 0,
+    order: 1
+  });
 
-        // HydroSOS Bands
+  datasets.push({
+    label: "Modeled Discharge",
+    data: toPoints(
+      currentCurve.dates,
+      currentCurve.cumulativeVolume
+    ),
+    borderColor: "black",
+    borderWidth: 4,
+    pointRadius: 0,
+    order: 0
+  });
 
-        traces.push({
-
-            x: dailyBands.dates,
-        
-            y: dailyBands.minimum,
-        
-            mode: "lines",
-        
-            line: { width: 0 },
-        
-            showlegend: false,
-
-            hoverinfo: "skip"
-        
-        });
-
-        traces.push({
-
-            x: dailyBands.dates,
-        
-            y: dailyBands.p10,
-        
-            mode: "lines",
-        
-            fill: "tonexty",
-        
-            fillcolor: "#CD233F80",
-        
-            line: { width: 0.5 },
-        
-            name: "Very Dry",
-            hoverinfo: "skip"
-        
-        });
-    
-    
-        // Dry
-        traces.push({
-
-            x: dailyBands.dates,
-        
-            y: dailyBands.p25,
-        
-            mode: "lines",
-        
-            fill: "tonexty",
-        
-            fillcolor: "#FFA88580",
-        
-            line: { color: "red",
-                width: 0.5 },
-        
-            name: "Dry",
-
-            hoverinfo: "skip"
-        
-        });
-    
-        // Normal
-    
-        traces.push({
-
-            x: dailyBands.dates,
-        
-            y: dailyBands.p75,
-        
-            mode: "lines",
-        
-            fill: "tonexty",
-        
-            fillcolor: "#E7E2BC80",
-        
-            line: { width: 0.5 },
-        
-            name: "Normal",
-
-            hoverinfo: "skip"
-        
-        });
-    
-    
-    
-        // Wet
-    
-        traces.push({
-
-            x: dailyBands.dates,
-        
-            y: dailyBands.p90,
-        
-            mode: "lines",
-        
-            fill: "tonexty",
-        
-            fillcolor: "#8ECEEE80",
-        
-            line: { color: "blue",
-                width: 0.5 },
-        
-            name: "Wet",
-
-            hoverinfo: "skip"
-        
-        });
-
-        // Very Wet
-        traces.push({
-
-            x: dailyBands.dates,
-        
-            y: dailyBands.maximum,
-        
-            mode: "lines",
-        
-            fill: "tonexty",
-        
-            fillcolor: "#2C7DCD80",
-        
-            line: { width: 0.5 },
-        
-            name: "Very Wet",
-
-            hoverinfo: "skip"
-        
-        });
-
-        // forecast envelope
-
-        traces.push({
-
-            x: forecast.dates,
-        
-            y: forecastMax,
-
-            name: "Historical Max",
-        
-            mode: "lines",
-        
-            line: {
-                color: "green",
-                width: 2,
-                dash: "dash"
-            },
-        
-            showlegend: true,
-
-            hovertemplate:
-        "<b>Historical Max:</b><br>" +
-        "%{y:.1f} billion m³" +
-        "<extra></extra>"
-        
-        });
-
-        traces.push({
-
-            x: forecast.dates,
-        
-            y: forecastMin,
-        
-            fill: "tonexty",
-        
-            fillcolor: "rgba(180,180,180,.25)",
-        
-            line: {
-                color: "red",
-                width: 2,
-                dash: "dash"
-            },
-        
-            name: "Historical Min",
-
-            hovertemplate:
-        "<b>Historical Min:</b><br>" +
-        "%{y:.1f} billion m³" +
-        "<extra></extra>"
-        
-        });
-
-        traces.push({
-
-            x: forecast.dates,
-        
-            y: forecastP25,
-        
-            mode: "lines",
-        
-            line: {
-                width: 0
-            },
-
-            hoverinfo: "skip",
-        
-            showlegend: false
-        
-        });
-
-        traces.push({
-
-            x: forecast.dates,
-        
-            y: forecastP75,
-        
-            mode: "lines",
-        
-            line: {
-                width: 0
-            },
-
-            hoverinfo: "skip",
-        
-            showlegend: false
-        
-        });
-
-        traces.push({
-
-            x: forecast.dates,
-        
-            y: forecastMedian,
-        
-            mode: "lines",
-        
-            name: "30-year Median Forecast",
-        
-            line: {
-        
-                color: "#1f77b4",
-        
-                width: 4,
-
-                dash: "dash"
-        
-            },
-
-            hovertemplate:
-        "<b>Median:</b><br>" +
-        "%{y:.1f} billion m³" +
-        "<extra></extra>"
-        
-        });
-
-        // Current year
-
-        traces.push({
-
-            x: currentCurve.dates,
-        
-            y: observedVolume,
-        
-            mode: "lines",
-        
-            name: "Observed",
-        
-            line: {
-        
-                color: "black",
-        
-                width: 4
-        
-            },
-
-            hovertemplate:
-            "<b>Current Year:</b><br>" +
-            "%{y:.1f} billion m³" +
-            "<extra></extra>"
-
-        
-        });
-
-        Plotly.newPlot(
-
-            "forecast-envelope",
-        
-            traces,
-        
-            {
-        
-                title:
-                    {text: "Three-Month Seasonal Outlook"},
-
-                    hovermode: "x unified",
-        
-                xaxis: {
-        
-                    title:
-                        "Water Year",
-
-                        tickformat: "%b",
-
-                        dtick: "M1",
-
-                        ticklabelmode: "period"
-        
-                },
-        
-                yaxis: {
-        
-                    title:
-                        "Cumulative Volume (m³)"
-        
-                }
-        
-            }
-        
-        );
-
-        console.log("Today:", today);
-console.log("Observed ends:", currentCurve.dates.at(-1));
-console.log("Forecast starts:", forecast.dates[0]);
-console.log("Current curve length:", currentCurve.dates.length);
-console.log(currentCurve.dates.slice(-10));
-console.log(forecast.dates.slice(0,10));
-console.log(
-    "Last observed date:",
-    currentCurve.dates[
-        currentCurve.cumulativeVolume.length - 1
-    ]
-);
-
-      
-
+  renderChart("forecast-envelope", {
+    type: "line",
+    data: {datasets},
+    options: {
+      responsive: true,
+      interaction: unifiedHover,
+      plugins: {
+        title: titleOptions("Three-Month Seasonal Outlook"),
+        legend: {
+          ...legendDefaults,
+          position: "top"
+        },
+        tooltip: {
+          ...tooltipDefaults,
+          callbacks: {
+            label: item =>
+              `${item.dataset.label}: ` +
+              `${item.parsed.y.toFixed(1)} billion m³`
+          }
+        }
+      },
+      scales: {
+        x: {
+          type: "time",
+          time: {
+            unit: "month",
+            displayFormats: {month: "MMM"},
+            tooltipFormat: "d MMM yyyy"
+          },
+          title: {
+            display: true,
+            text: "Water Year"
+          }
+        },
+        y: {
+          title: {
+            display: true,
+            text: "Cumulative Volume (billion m³)"
+          }
+        }
+      }
     }
+  });
+}
+
+function toPoints(dates, volumes) {
+  return volumes.map((volume, index) => ({
+    x: dates[index],
+    y: volume == null ? null : volume / 1e9
+  }));
+}

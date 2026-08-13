@@ -395,3 +395,355 @@ html, body,
 .hydrosos-color.very-wet {
     background: #2C7DCD;
 }
+
+
+/* =========================================
+   BASIN STATUS
+   ========================================= */
+
+.basin-status {
+    margin-bottom: 24px;
+}
+
+
+/* Status heading */
+
+.basin-status-heading {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 10px;
+
+    margin-bottom: 16px;
+}
+
+
+.basin-status-heading h2 {
+
+    margin: 0;
+
+    font-size: 1.05rem;
+
+    font-weight: 700;
+}
+
+
+/* Status badge */
+
+.hydrologic-status-badge {
+
+    display: inline-block;
+
+    padding: 5px 12px;
+
+    border-radius: 999px;
+
+    font-size: 0.78rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.04em;
+
+    text-transform: uppercase;
+}
+
+
+/* HydroSOS colors */
+
+.hydrologic-status-badge.very-dry {
+    background-color: #CD233F;
+    color: white;
+}
+
+.hydrologic-status-badge.dry {
+    background-color: #FFA885;
+    color: #3a241d;
+}
+
+.hydrologic-status-badge.normal {
+    background-color: #E7E2BC;
+    color: #3b3828;
+}
+
+.hydrologic-status-badge.wet {
+    background-color: #8ECEEE;
+    color: #173b4d;
+}
+
+.hydrologic-status-badge.very-wet {
+    background-color: #2C7DCD;
+    color: white;
+}
+
+
+/* =========================================
+   Metric cards
+   ========================================= */
+
+.status-metrics {
+
+    display: grid;
+
+    grid-template-columns:
+        repeat(3, minmax(0, 1fr));
+
+    gap: 10px;
+}
+
+
+.status-metric {
+
+    padding: 14px 12px;
+
+    background: #f7f8f9;
+
+    border: 1px solid #e2e5e8;
+
+    border-radius: 10px;
+
+    min-width: 0;
+}
+
+
+.status-metric-label {
+
+    margin-bottom: 8px;
+
+    font-size: 0.72rem;
+
+    font-weight: 700;
+
+    letter-spacing: 0.05em;
+
+    text-transform: uppercase;
+
+    color: #6b7280;
+}
+
+
+.status-metric-percentile {
+
+    font-size: 1.7rem;
+
+    font-weight: 700;
+
+    line-height: 1;
+}
+
+
+.status-metric-percentile span {
+
+    font-size: 0.8rem;
+
+    font-weight: 600;
+}
+
+
+.status-metric-description {
+
+    margin-top: 4px;
+
+    font-size: 0.72rem;
+
+    color: #6b7280;
+}
+
+
+.status-metric-secondary {
+
+    margin-top: 9px;
+
+    font-size: 0.82rem;
+
+    color: #4b5563;
+}
+
+
+.status-metric-outlook {
+
+    margin-top: 8px;
+
+    font-size: 1.05rem;
+
+    font-weight: 650;
+
+    line-height: 1.25;
+}
+
+
+/* =========================================
+   Basin identifiers
+   ========================================= */
+
+.basin-identifiers {
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    gap: 7px;
+
+    margin-top: 14px;
+
+    padding-top: 10px;
+
+    border-top: 1px solid #e1e4e8;
+
+    font-size: 0.72rem;
+
+    color: #8a9199;
+}
+
+
+.identifier-divider {
+    opacity: 0.5;
+}
+
+
+/* =========================================
+   Smaller screens
+   ========================================= */
+
+@media (max-width: 600px) {
+
+    .status-metrics {
+        grid-template-columns: 1fr;
+    }
+
+    .status-metric {
+        padding: 12px 14px;
+    }
+
+}
+
+#workspace {
+    position: relative;
+  }
+  
+  .hydrosos-date-controls {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #f8fafc;
+    padding: 6px 8px;
+    border-radius: 6px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+  }
+  
+  .hydrosos-date-controls button {
+    cursor: pointer;
+  }
+
+
+  /* =========================================
+   STATUS METRIC COLORS
+   ========================================= */
+
+.status-metric {
+    border-left: 4px solid transparent;
+}
+
+
+/* Very Dry */
+
+.status-metric.very-dry {
+    background-color: #fbeaec;
+    border-left-color: #CD233F;
+}
+
+
+/* Dry */
+
+.status-metric.dry {
+    background-color: #fff2ec;
+    border-left-color: #FFA885;
+}
+
+
+/* Normal */
+
+.status-metric.normal {
+    background-color: #f8f6e8;
+    border-left-color: #E7E2BC;
+}
+
+
+/* Wet */
+
+.status-metric.wet {
+    background-color: #edf8fc;
+    border-left-color: #8ECEEE;
+}
+
+
+/* Very Wet */
+
+.status-metric.very-wet {
+    background-color: #e8f2fb;
+    border-left-color: #2C7DCD;
+}
+
+
+.basin-search-container {
+    position: relative;
+}
+
+
+.basin-suggestions {
+    position: absolute;
+
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+
+    background: white;
+
+    border: 1px solid #d5d9dd;
+
+    border-radius: 6px;
+
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.12);
+
+    overflow: hidden;
+
+    display: none;
+
+    z-index: 1000;
+}
+
+
+.basin-suggestions.visible {
+    display: block;
+}
+
+
+.basin-suggestion {
+
+    padding: 9px 12px;
+
+    font-size: 0.85rem;
+
+    cursor: pointer;
+
+    color: #333;
+
+    transition:
+        background-color 0.1s ease;
+}
+
+
+.basin-suggestion:hover {
+
+    background-color: #f0f3f5;
+
+}
+

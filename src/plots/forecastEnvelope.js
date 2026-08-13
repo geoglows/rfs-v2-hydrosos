@@ -25,6 +25,21 @@ export function plotForecastEnvelope(data) {
     };
   });
 
+  console.log(
+    "Cumulative curves with invalid values:",
+    cumulativeCurves.filter(curve =>
+        curve.cumulativeVolume.some(
+            v => v == null || Number.isNaN(v)
+        )
+    ).map(curve => ({
+        year: curve.year,
+        invalidValues:
+            curve.cumulativeVolume.filter(
+                v => v == null || Number.isNaN(v)
+            ).length
+    }))
+);
+
   const today = new Date();
 
   const historicalCurves =
@@ -37,6 +52,16 @@ export function plotForecastEnvelope(data) {
     cumulativeCurves.find(
       c => c.year === today.getUTCFullYear()
     );
+
+    console.log("Current curve:", {
+      year: currentCurve?.year,
+      length: currentCurve?.cumulativeVolume.length,
+      lastVolume: currentCurve?.cumulativeVolume.at(-1),
+      invalidValues:
+          currentCurve?.cumulativeVolume.filter(
+              v => v == null || Number.isNaN(v)
+          ).length
+  });
 
   const lastModeledDate =
     currentCurve.dates[currentCurve.cumulativeVolume.length - 1];
@@ -52,6 +77,12 @@ export function plotForecastEnvelope(data) {
     computeForecastEnvelope(
       historicalForecasts
     );
+
+    console.log("Forecast:", {
+      median: forecast?.median?.at(-1),
+      minimum: forecast?.minimum?.at(-1),
+      maximum: forecast?.maximum?.at(-1)
+  });
 
   const dailyBands =
     computeDailyPercentileBands(historicalCurves);

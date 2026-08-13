@@ -28,16 +28,45 @@
     </h1>
 
     <div class="header-right">
-      <input id="basin-search" placeholder="Search HYBAS_ID..." type="text">
-      <button id="search-button">Search</button>
-      <button aria-controls="basin-panel" aria-expanded="false" id="toggle-panel">Show Charts</button>
-    </div>
 
+      <div class="basin-search-container">
+    
+        <input
+          id="basin-search"
+          placeholder="Search HYBAS_ID..."
+          type="text"
+          autocomplete="off"
+        >
+    
+        <div
+          id="basin-suggestions"
+          class="basin-suggestions"
+        ></div>
+    
+      </div>
+    
+      <button id="search-button">Search</button>
+    
+      <button
+        aria-controls="basin-panel"
+        aria-expanded="false"
+        id="toggle-panel"
+      >
+        Show Charts
+      </button>
+    
+    </div>
   </header>
 
   <div id="workspace">
 
     <div id="map"></div>
+
+    <div class="hydrosos-date-controls" id="hydrosos-date-controls">
+      <button aria-label="Previous month" id="hydrosos-prev">‹</button>
+      <input id="hydrosos-date" type="month"/>
+      <button aria-label="Next month" id="hydrosos-next">›</button>
+    </div>
 
     <aside class="panel hidden" id="basin-panel">
       <div class="panel-content">

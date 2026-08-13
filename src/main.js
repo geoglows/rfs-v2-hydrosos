@@ -14,10 +14,16 @@ import {destroyAllCharts} from "./plots/chartSetup.js";
 import {plotAnnualRunoff} from "./plots/yearlyVolume.js";
 import {computeHydrologicSummary} from "./utils/computeHydrologicSummary.js";
 import {updateHydrologicSummary} from "./utils/updateHydrologicSummary.js";
+import { initDatePicker } from "./utils/datePicker.js";
+import {loadBasinSearchIndex,searchBasins} from "./utils/basinSearch.js"
+
+
 
 const map = createMap();
 const tifUrl = await findLatestTif();
 await addRasterLayer(map, tifUrl);
+
+await loadBasinSearchIndex();
 
 const panel = document.getElementById("basin-panel");
 const toggleButton = document.getElementById("toggle-panel");
@@ -45,6 +51,100 @@ function closePanel() {
 
 const searchBox = document.getElementById("basin-search");
 const searchButton = document.getElementById("search-button");
+
+const suggestionsBox =
+  document.getElementById("basin-suggestions");
+
+  searchBox.addEventListener(
+    "input",
+    handleSearchInput
+  );
+
+  function handleSearchInput() {
+
+    const query =
+      searchBox.value.trim();
+  
+    if (!query) {
+      hideSuggestions();
+      return;
+    }
+  
+    const suggestions =
+      searchBasins(query);
+  
+    showSuggestions(suggestions);
+  }
+
+  function showSuggestions(suggestions) {
+
+    if (suggestions.length === 0) {
+      hideSuggestions();
+      return;
+    }
+  
+    suggestionsBox.innerHTML =
+      suggestions.map(id => `
+        <div
+          class="basin-suggestion"
+          data-hybas-id="${id}"
+        >
+          ${id}
+        </div>
+      `).join("");
+  
+    suggestionsBox.classList.add("visible");
+  
+  
+    suggestionsBox
+      .querySelectorAll(".basin-suggestion")
+      .forEach(item => {
+  
+        item.addEventListener(
+          "click",
+          () => {
+  
+            const hybasID =
+              item.dataset.hybasId;
+  
+            searchBox.value =
+              hybasID;
+  
+            hideSuggestions();
+  
+            runSearch();
+  
+          }
+        );
+  
+      });
+  }
+  
+  
+  function hideSuggestions() {
+  
+    suggestionsBox.innerHTML = "";
+  
+    suggestionsBox.classList.remove(
+      "visible"
+    );
+  
+  }
+
+  document.addEventListener(
+    "click",
+    event => {
+  
+      if (
+        !event.target.closest(
+          ".basin-search-container"
+        )
+      ) {
+        hideSuggestions();
+      }
+  
+    }
+  );
 
 document
   .getElementById("close-modal")
@@ -117,13 +217,20 @@ await addBasinLayer(
 )
 
 function runSearch() {
-  const hybasID = searchBox.value.trim();
-  const feature = selectBasin(hybasID, map);
+
+  const hybasID =
+    searchBox.value.trim();
+
+  hideSuggestions();
+
+  const feature =
+    selectBasin(hybasID, map);
 
   if (!feature) {
     alert("HYBAS_ID not found.");
     return;
   }
+
   openBasin(feature);
 }
 
@@ -133,3 +240,9 @@ searchBox.addEventListener(
     if (event.key === "Enter") runSearch();
   }
 )
+
+initDatePicker(map, {
+  inputEl: document.getElementById("hydrosos-date"),
+  prevBtn: document.getElementById("hydrosos-prev"),
+  nextBtn: document.getElementById("hydrosos-next")
+});

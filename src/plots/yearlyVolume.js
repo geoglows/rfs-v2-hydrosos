@@ -4,7 +4,7 @@ import {computeMovingAverage} from "../utils/computeMovingAverage";
 import {formatVolume} from "../utils/formatVolume";
 import {legendDefaults, renderChart, titleOptions, tooltipDefaults, unifiedHover} from "./chartSetup.js";
 
-const MOVING_AVERAGE_YEARS = 30;
+const MOVING_AVERAGE_YEARS = 5;
 
 export function plotAnnualRunoff(data) {
   const records = buildRecords(data);

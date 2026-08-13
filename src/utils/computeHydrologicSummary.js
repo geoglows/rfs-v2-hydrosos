@@ -1,5 +1,7 @@
-import {buildHydroSOSForecast} from "./buildHydroSOSForecast.js";
-import {computeRollingVolumePercentile} from "./computeRollingVolumePercentile.js";
+
+
+import { computeRollingVolumePercentile } from "./computeRollingVolumePercentile.js";
+import { computeRollingVolumeOutlook } from "./computeRollingVolumeOutlook.js";
 
 // Each entry is the percentile the band starts at and the width it spans,
 // so a flow landing inside it interpolates between the two edges.
@@ -63,16 +65,23 @@ export function computeHydrologicSummary(
 
   // The forecast is drawn from the historical median, so until it carries a
   // basin-specific signal the outlook it implies is always a normal one.
-  const forecast = buildHydroSOSForecast(
-    bands,
-    currentYearMonthly
-  );
+  const volumeOutlook =
+    computeRollingVolumeOutlook(records);
 
   return {
     status: getStatus(flowPercentile),
     flowPercentile,
     currentFlow,
     volumePercentile: rollingVolume?.percentile ?? null,
-    outlook: forecast ? "Near normal" : null
+    rollingVolumeValue: rollingVolume?.currentVolume ?? null,
+    outlookPercentile:
+    volumeOutlook?.percentile ?? null,
+
+outlook:
+    volumeOutlook?.outlook ?? null,
+
+projectedVolume:
+    volumeOutlook?.projectedVolume ?? null
+   
   };
 }

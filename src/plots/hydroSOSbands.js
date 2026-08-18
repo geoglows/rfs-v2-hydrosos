@@ -16,11 +16,16 @@ export function plotHydroSOSBands(
     b => MONTH_NAMES[b.month - 1]
   );
 
+  console.log("HydroSOS bands months:", months);
+console.log("Current year monthly:", currentYearMonthly);
+
   const forecast =
     buildHydroSOSForecast(
       bands,
       currentYearMonthly
     );
+
+    console.log("HydroSOS forecast:", forecast);
 
   // Shaded status bands, each filling down to the one before it
   const datasets = [

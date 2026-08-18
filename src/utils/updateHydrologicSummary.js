@@ -1,3 +1,27 @@
+import { formatVolume } from "./formatVolume";
+
+
+function ordinalSuffix(number) {
+
+  const n = Math.abs(Math.round(number));
+
+  if (n % 100 >= 11 && n % 100 <= 13) {
+      return "th";
+  }
+
+  switch (n % 10) {
+      case 1:
+          return "st";
+      case 2:
+          return "nd";
+      case 3:
+          return "rd";
+      default:
+          return "th";
+  }
+}
+
+
 export function updateHydrologicSummary(
     summary,
     basinID,
@@ -88,12 +112,8 @@ const outlookStatusClass =
             : "—";
 
 
-    const volumeValue =
-        summary.rollingVolumeValue != null
-            ? (
-                summary.rollingVolumeValue / 1e9
-            ).toFixed(1)
-            : "—";
+            const volumeValue =
+            formatVolume(summary.rollingVolumeValue);
 
 
     element.innerHTML = `
@@ -120,7 +140,7 @@ const outlookStatusClass =
                     </div>
 
                     <div class="status-metric-percentile">
-                        ${flowPercentile ?? "—"}<span>th</span>
+                        ${flowPercentile ?? "—"}<span>${flowPercentile != null ? ordinalSuffix(flowPercentile) : ""}</span>
                     </div>
 
                     <div class="status-metric-description">
@@ -141,7 +161,7 @@ const outlookStatusClass =
                     </div>
 
                     <div class="status-metric-percentile">
-                        ${volumePercentile ?? "—"}<span>th</span>
+                        ${volumePercentile ?? "—"}<span>${volumePercentile != null ? ordinalSuffix(volumePercentile) : ""}</span>
                     </div>
 
                     <div class="status-metric-description">
@@ -149,7 +169,7 @@ const outlookStatusClass =
                     </div>
 
                     <div class="status-metric-secondary">
-                        ${volumeValue} billion m³
+                    ${volumeValue}
                     </div>
 
                 </div>
@@ -162,11 +182,15 @@ const outlookStatusClass =
     </div>
 
     <div class="status-metric-percentile">
-        ${
-            summary.outlookPercentile != null
-                ? Math.round(summary.outlookPercentile)
-                : "—"
-        }<span>th</span>
+    ${
+      summary.outlookPercentile != null
+          ? Math.round(summary.outlookPercentile)
+          : "—"
+  }<span>${
+      summary.outlookPercentile != null
+          ? ordinalSuffix(summary.outlookPercentile)
+          : ""
+  }</span>
     </div>
 
     <div class="status-metric-description">
@@ -174,15 +198,8 @@ const outlookStatusClass =
     </div>
 
     <div class="status-metric-secondary">
-        ${
-            summary.projectedVolume != null
-                ? (
-                    summary.projectedVolume / 1e9
-                ).toFixed(1)
-                : "—"
-        }
-        billion m³ projected
-    </div>
+    ${formatVolume(summary.projectedVolume)} projected
+</div>
 
 </div>
 

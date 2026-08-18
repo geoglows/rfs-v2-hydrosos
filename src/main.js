@@ -14,12 +14,17 @@ import {destroyAllCharts} from "./plots/chartSetup.js";
 import {plotAnnualRunoff} from "./plots/yearlyVolume.js";
 import {computeHydrologicSummary} from "./utils/computeHydrologicSummary.js";
 import {updateHydrologicSummary} from "./utils/updateHydrologicSummary.js";
-import { initDatePicker } from "./utils/datePicker.js";
+import { createDatePickerControl } from "./utils/datePicker.js";
 import {loadBasinSearchIndex,searchBasins} from "./utils/basinSearch.js"
 
 
 
 const map = createMap();
+
+map.addControl(
+  createDatePickerControl(map),
+  "top-right"
+);
 const tifUrl = await findLatestTif();
 await addRasterLayer(map, tifUrl);
 
@@ -241,8 +246,8 @@ searchBox.addEventListener(
   }
 )
 
-initDatePicker(map, {
-  inputEl: document.getElementById("hydrosos-date"),
-  prevBtn: document.getElementById("hydrosos-prev"),
-  nextBtn: document.getElementById("hydrosos-next")
-});
+// initDatePicker(map, {
+//   inputEl: document.getElementById("hydrosos-date"),
+//   prevBtn: document.getElementById("hydrosos-prev"),
+//   nextBtn: document.getElementById("hydrosos-next")
+// });

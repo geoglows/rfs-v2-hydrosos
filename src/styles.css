@@ -246,11 +246,12 @@ html, body,
     justify-content: center;
     align-items: center;
 
-    background: rgba(255, 255, 255, 0.55);
+    background: white;
 
-    z-index: 500;
+    z-index: 1000;
 
 }
+
 
 .chart-subtitle {
 
@@ -625,23 +626,59 @@ html, body,
   }
   
   .hydrosos-date-controls {
-    position: absolute;
-    top: 12px;
-    left: 12px;
-    z-index: 10;
     display: flex;
     align-items: center;
-    gap: 6px;
-    background: #f8fafc;
-    padding: 6px 8px;
-    border-radius: 6px;
-    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
-  }
-  
-  .hydrosos-date-controls button {
-    cursor: pointer;
-  }
 
+    background: white;
+
+    border-radius: 4px;
+
+    box-shadow:
+        0 0 0 2px rgba(0, 0, 0, 0.1);
+
+    overflow: hidden;
+}
+
+
+.hydrosos-date-controls button {
+    border: none;
+
+    background: white;
+
+    width: 32px;
+    height: 32px;
+
+    font-size: 20px;
+
+    cursor: pointer;
+}
+
+
+.hydrosos-date-controls button:hover {
+    background: #f0f0f0;
+}
+
+
+.hydrosos-date-controls button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
+
+.hydrosos-date-controls input {
+    border: none;
+
+    border-left: 1px solid #ddd;
+    border-right: 1px solid #ddd;
+
+    height: 32px;
+
+    padding: 0 6px;
+
+    font-family: inherit;
+
+    background: white;
+}
 
   /* =========================================
    STATUS METRIC COLORS

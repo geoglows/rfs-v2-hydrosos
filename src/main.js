@@ -16,6 +16,8 @@ import {computeHydrologicSummary} from "./utils/computeHydrologicSummary.js";
 import {updateHydrologicSummary} from "./utils/updateHydrologicSummary.js";
 import { createDatePickerControl } from "./utils/datePicker.js";
 import {loadBasinSearchIndex,searchBasins} from "./utils/basinSearch.js"
+import { fetchBiasCorrectedRetrospective } from "./data/fetchBiasCorrected.js";
+import { createDataSourceControl } from "./utils/dataSourceControl.js";
 
 
 
@@ -25,6 +27,14 @@ map.addControl(
   createDatePickerControl(map),
   "top-right"
 );
+
+map.addControl(
+  createDataSourceControl({
+    onChange: handleDataSourceChange
+  }),
+  "top-right"
+);
+
 const tifUrl = await findLatestTif();
 await addRasterLayer(map, tifUrl);
 
@@ -32,6 +42,9 @@ await loadBasinSearchIndex();
 
 const panel = document.getElementById("basin-panel");
 const toggleButton = document.getElementById("toggle-panel");
+
+let useBiasCorrected = false;
+let currentBasinFeature = null;
 
 // The panel takes half the row away from the map, so MapLibre has to
 // remeasure once the width transition has finished.
@@ -165,48 +178,106 @@ const base = import.meta.env.BASE_URL;
 const basinBounds = await fetch(`${base}basin_index.json`).then(r => r.json());
 const outletLookup = await fetch(`${base}outlet_lookup.json`).then(r => r.json());
 
+const outletNames = await fetch(`${base}outlet_names.json`)
+  .then(r => r.json());
+
+  console.log("Basin lookup:", basinBounds);
+console.log("Outlet lookup:", outletLookup);
+console.log("Outlet names:", outletNames);
+
+console.log(
+  "Example outlet name:",
+  outletNames["7040585120"]
+);
+
+async function fetchRetrospectiveData(riverID) {
+  if (useBiasCorrected) {
+    return fetchBiasCorrectedRetrospective(riverID);
+  }
+
+  return fetchRetrospective(riverID);
+}
+
+function handleDataSourceChange(biasCorrected) {
+  if (biasCorrected === useBiasCorrected) {
+    return;
+  }
+
+  useBiasCorrected = biasCorrected;
+
+  // If a basin is already open, reload it using the new source.
+  if (currentBasinFeature) {
+    openBasin(currentBasinFeature);
+  }
+}
+
 // -------------------------------
 // Open a basin (used by BOTH clicks and search)
 // -------------------------------
 
 async function openBasin(feature) {
+  currentBasinFeature = feature;
+
+
   openPanel();
   document.querySelector(".panel-content").scrollTop = 0;
 
   const props = feature.properties;
-  const riverID = outletLookup[props.HYBAS_ID].riverID;
+const hybasID = String(props.HYBAS_ID);
 
+const outletInfo = outletLookup[hybasID];
+
+if (!outletInfo) {
+  console.error("No outlet lookup found for basin:", hybasID);
+  return;
+}
+
+const riverID = outletInfo.riverID;
+
+const riverName =
+  outletNames[hybasID]?.riverName ?? null;
+
+  
   document.getElementById("loading").style.display = "flex";
 
   try {
-    const data = await fetchRetrospective(riverID);
+    const data = await fetchRetrospectiveData(riverID);
+
     plotCumulativeVolume(data);
     const records = buildRecords(data);
     const hydroSOSData = getHydroSOSData(records);
 
-    // The status summary reads the same bands the chart below it shades
     updateHydrologicSummary(
       computeHydrologicSummary(
         records,
         hydroSOSData.bands,
         hydroSOSData.currentYearMonthly
       ),
-      props.HYBAS_ID,
-      riverID
+      hybasID,
+      riverID,
+      riverName
     );
 
     plotHydroSOSBands(
       hydroSOSData.bands,
       hydroSOSData.currentYearMonthly
     );
+
     plotForecastEnvelope(data);
     plotAnnualRunoff(data);
+
   } catch (error) {
     console.error(error);
-    // Leaves the basin IDs on screen, so the panel does not keep showing
-    // the status of whichever basin was open before this one
-    updateHydrologicSummary(null, props.HYBAS_ID, riverID);
+
+    updateHydrologicSummary(
+      null,
+      hybasID,
+      riverID,
+      riverName
+    );
+
     alert("Unable to load basin data.");
+
   } finally {
     document.getElementById("loading").style.display = "none";
   }

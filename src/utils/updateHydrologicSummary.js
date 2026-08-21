@@ -25,31 +25,40 @@ function ordinalSuffix(number) {
 export function updateHydrologicSummary(
     summary,
     basinID,
-    riverID
+    riverID,
+    riverName
 ) {
-
     const element =
         document.getElementById("basin-info");
 
     if (!element) {
         return;
     }
+    const basinDisplayName = riverName
+    ? `${riverName} Basin`
+    : `Basin ${basinID}`;
 
     if (!summary) {
 
         element.innerHTML = `
+    
             <div class="basin-status">
+    
                 <div class="basin-status-heading">
-                    <h2>Basin Status</h2>
+    
+                    <h1 class="basin-name">
+                        ${basinDisplayName}
+                    </h1>
+    
                 </div>
-
+    
                 <p>Hydrologic status unavailable.</p>
+    
             </div>
         `;
-
+    
         return;
     }
-  
 
 
     const flowPercentile =
@@ -116,19 +125,21 @@ const outlookStatusClass =
             formatVolume(summary.rollingVolumeValue);
 
 
-    element.innerHTML = `
+            element.innerHTML = `
 
-        <div class="basin-status">
+            <div class="basin-status">
 
-            <div class="basin-status-heading">
+    <div class="basin-status-heading">
 
-                <h2>Basin Status:</h2>
+        <h1 class="basin-name">
+            ${basinDisplayName}
+        </h1>
 
-                <div class="hydrologic-status-badge ${statusClass}">
-                    ${summary.status}
-                </div>
+        <div class="hydrologic-status-badge ${statusClass}">
+            ${summary.status}
+        </div>
 
-            </div>
+    </div>
 
 
             <div class="status-metrics">

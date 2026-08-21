@@ -12,23 +12,20 @@ const BAND_STOPS = [
   ["p75", "p90", 75, 15]
 ];
 
-function interpolatePercentile(value, band) {
-  if (value == null || !band) {
+function computeEmpiricalPercentile(value, values) {
+  if (value == null || !values?.length) {
     return null;
   }
 
-  if (value <= band.p10) return 10;
+  const sorted = [...values].sort((a, b) => a - b);
 
-  for (const [lower, upper, start, span] of BAND_STOPS) {
-    if (value <= band[upper]) {
-      return start + (
-        (value - band[lower]) /
-        (band[upper] - band[lower])
-      ) * span;
-    }
-  }
+  const countBelow = sorted.filter(v => v < value).length;
+  const countEqual = sorted.filter(v => v === value).length;
 
-  return 90;
+  return (
+    (countBelow + 0.5 * countEqual) /
+    sorted.length
+  ) * 100;
 }
 
 function getStatus(percentile) {
@@ -55,9 +52,10 @@ export function computeHydrologicSummary(
 
   const currentFlow = currentYearMonthly[lastObserved];
 
-  const flowPercentile = interpolatePercentile(
+  const flowPercentile =
+  computeEmpiricalPercentile(
     currentFlow,
-    bands[lastObserved]
+    bands[lastObserved].values
   );
 
   const rollingVolume =

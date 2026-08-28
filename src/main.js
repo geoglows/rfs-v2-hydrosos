@@ -18,6 +18,7 @@ import { createDatePickerControl } from "./utils/datePicker.js";
 import {loadBasinSearchIndex,searchBasins} from "./utils/basinSearch.js"
 import { fetchBiasCorrectedRetrospective } from "./data/fetchBiasCorrected.js";
 import { createDataSourceControl } from "./utils/dataSourceControl.js";
+import { initAboutPanel } from "./ui/aboutPanel.js";
 
 
 
@@ -45,6 +46,8 @@ const toggleButton = document.getElementById("toggle-panel");
 
 let useBiasCorrected = false;
 let currentBasinFeature = null;
+
+initAboutPanel();
 
 // The panel takes half the row away from the map, so MapLibre has to
 // remeasure once the width transition has finished.
@@ -97,46 +100,54 @@ const suggestionsBox =
   function showSuggestions(suggestions) {
 
     if (suggestions.length === 0) {
-      hideSuggestions();
-      return;
+        hideSuggestions();
+        return;
     }
-  
+
+
     suggestionsBox.innerHTML =
-      suggestions.map(id => `
-        <div
-          class="basin-suggestion"
-          data-hybas-id="${id}"
-        >
-          ${id}
-        </div>
-      `).join("");
-  
+        suggestions.map(basin => `
+            <div
+                class="basin-suggestion"
+                data-hybas-id="${basin.hybasId}"
+            >
+                <div class="basin-suggestion-name">
+                    ${basin.name || "Unnamed basin"}
+                </div>
+
+                <div class="basin-suggestion-id">
+                    HYBASIN ${basin.hybasId}
+                </div>
+            </div>
+        `).join("");
+
+
     suggestionsBox.classList.add("visible");
-  
-  
+
+
     suggestionsBox
-      .querySelectorAll(".basin-suggestion")
-      .forEach(item => {
-  
-        item.addEventListener(
-          "click",
-          () => {
-  
-            const hybasID =
-              item.dataset.hybasId;
-  
-            searchBox.value =
-              hybasID;
-  
-            hideSuggestions();
-  
-            runSearch();
-  
-          }
-        );
-  
-      });
-  }
+        .querySelectorAll(".basin-suggestion")
+        .forEach(item => {
+
+            item.addEventListener(
+                "click",
+                () => {
+
+                    const hybasID =
+                        item.dataset.hybasId;
+
+                    searchBox.value =
+                        hybasID;
+
+                    hideSuggestions();
+
+                    runSearch();
+
+                }
+            );
+
+        });
+}
   
   
   function hideSuggestions() {

@@ -1,24 +1,48 @@
-let basinIDs = [];
+let basinSearchIndex = [];
 
 
 export async function loadBasinSearchIndex() {
 
-    const response =
-        await fetch("/basin_index.json");
+    const [basinResponse, namesResponse] =
+        await Promise.all([
+            fetch("/basin_index.json"),
+            fetch("/outlet_names.json")
+        ]);
 
-    if (!response.ok) {
+    if (!basinResponse.ok) {
         throw new Error(
             "Unable to load basin search index."
         );
     }
 
+    if (!namesResponse.ok) {
+        throw new Error(
+            "Unable to load basin names."
+        );
+    }
+
     const bounds =
-        await response.json();
+        await basinResponse.json();
 
-    basinIDs =
-        Object.keys(bounds);
+    const names =
+        await namesResponse.json();
 
-    return basinIDs;
+
+    basinSearchIndex =
+        Object.keys(bounds).map(hybasId => {
+
+            const basinName =
+                names[hybasId]?.riverName ?? null;
+
+            return {
+                hybasId,
+                name: basinName
+            };
+
+        });
+
+
+    return basinSearchIndex;
 }
 
 
@@ -28,15 +52,29 @@ export function searchBasins(
 ) {
 
     const normalized =
-        query.trim();
+        query.trim().toLowerCase();
 
     if (!normalized) {
         return [];
     }
 
-    return basinIDs
-        .filter(id =>
-            id.startsWith(normalized)
-        )
+
+    return basinSearchIndex
+        .filter(basin => {
+
+            const idMatch =
+                basin.hybasId
+                    .toLowerCase()
+                    .startsWith(normalized);
+
+            const nameMatch =
+                basin.name &&
+                basin.name
+                    .toLowerCase()
+                    .startsWith(normalized);
+
+            return idMatch || nameMatch;
+
+        })
         .slice(0, limit);
 }
